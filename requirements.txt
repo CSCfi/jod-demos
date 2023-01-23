@@ -7,8 +7,5 @@ pandas
 scipy
 joblib
 sklearn
-fasttext
-sentence_transformers
-requests
 nltk
 libvoikko

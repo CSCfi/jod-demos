@@ -1,5 +1,5 @@
 # tnpp:
-import requests
+#import requests
 
 # voikko:
 from nltk.tokenize import word_tokenize

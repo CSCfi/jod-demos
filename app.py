@@ -14,10 +14,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-import fasttext as ft
-
-from sentence_transformers import SentenceTransformer
-
 from lemmatizer import lemmatize, test_lemmatizer
 
 from yamlconfig import read_config
@@ -51,6 +47,7 @@ else:
     print('Skipping TF-IDF')
 
 if DO_FT:
+    import fasttext as ft
     print('Loading FastText model:', cfg['ftmodel'])
     model_ft = ft.load_model(cfg['ftmodel'])
     X_ft1 = joblib.load('{}/tmt/{}-{}-fasttext.pkl'.format(cfg['datadir'], cfg['dataset1'], cfg['lemmatizer']))
@@ -63,6 +60,7 @@ else:
     print('Skipping FastText')
 
 if DO_STRANS:
+    from sentence_transformers import SentenceTransformer
     print('Loading Sentence Transformer model:', cfg['stmodel'])
     model_strans = SentenceTransformer(cfg['stmodel'])
     Xemb1 = np.load(cfg['datadir']+'/tmt/'+cfg['embfile1'])
