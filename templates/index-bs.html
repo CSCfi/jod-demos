@@ -1,0 +1,328 @@
+{% extends "bootstrap/base.html" %}
+{% block title %}JOD-testi{% endblock %}
+
+{% block navbar %}
+<div class="navbar navbar-fixed-top">
+  <!-- ... -->
+</div>
+{% endblock %}
+
+{% block styles %}
+{{super()}}
+<link rel="stylesheet"
+      href="{{url_for('.static', filename='mystyle.css')}}">
+{% endblock %}
+
+{% block content %}
+<h1>JOD-kohtaantokokeilu 1: tekstien samankaltaisuus</h1>
+
+<form method="POST" action="/">
+    {{ form.csrf_token }}
+    {{ form.name.label }} {{ form.name(size=100) }}
+    <input type="submit" value="Go">
+</form>
+
+<b>lemmatisoitu hakulause:</b> {{lemmatized}}
+<h2>Ammattitieto</h2>
+<table class="table">
+  <thead>
+    <tr>
+      <th class="idxcol">#</th>
+      <th class="rescol">TF-IDF</th>
+      <th class="rescol">FastText</th>
+      <th class="rescol">Sentence Transformer</th>
+      <th class="rescol">Yhdistelmä</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">1</th>
+      <td>{{results1['ammattitieto'][0]}}</td>
+      <td>{{results2['ammattitieto'][0]}}</td>
+      <td>{{results3['ammattitieto'][0]}}</td>
+      <td>{{results4['ammattitieto'][0]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">2</th>
+      <td>{{results1['ammattitieto'][1]}}</td>
+      <td>{{results2['ammattitieto'][1]}}</td>
+      <td>{{results3['ammattitieto'][1]}}</td>
+      <td>{{results4['ammattitieto'][1]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">3</th>
+      <td>{{results1['ammattitieto'][2]}}</td>
+      <td>{{results2['ammattitieto'][2]}}</td>
+      <td>{{results3['ammattitieto'][2]}}</td>
+      <td>{{results4['ammattitieto'][2]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">4</th>
+      <td>{{results1['ammattitieto'][3]}}</td>
+      <td>{{results2['ammattitieto'][3]}}</td>
+      <td>{{results3['ammattitieto'][3]}}</td>
+      <td>{{results4['ammattitieto'][3]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">5</th>
+      <td>{{results1['ammattitieto'][4]}}</td>
+      <td>{{results2['ammattitieto'][4]}}</td>
+      <td>{{results3['ammattitieto'][4]}}</td>
+      <td>{{results4['ammattitieto'][4]}}</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Eperusteet</h2>
+<table class="table">
+  <thead>
+    <tr>
+      <th class="idxcol">#</th>
+      <th class="rescol">TF-IDF</th>
+      <th class="rescol">FastText</th>
+      <th class="rescol">Sentence Transformer</th>
+      <th class="rescol">Yhdistelmä</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">1</th>
+      <td>{{results1['eperusteet'][0]}}</td>
+      <td>{{results2['eperusteet'][0]}}</td>
+      <td>{{results3['eperusteet'][0]}}</td>
+      <td>{{results4['eperusteet'][0]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">2</th>
+      <td>{{results1['eperusteet'][1]}}</td>
+      <td>{{results2['eperusteet'][1]}}</td>
+      <td>{{results3['eperusteet'][1]}}</td>
+      <td>{{results4['eperusteet'][1]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">3</th>
+      <td>{{results1['eperusteet'][2]}}</td>
+      <td>{{results2['eperusteet'][2]}}</td>
+      <td>{{results3['eperusteet'][2]}}</td>
+      <td>{{results4['eperusteet'][2]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">4</th>
+      <td>{{results1['eperusteet'][3]}}</td>
+      <td>{{results2['eperusteet'][3]}}</td>
+      <td>{{results3['eperusteet'][3]}}</td>
+      <td>{{results4['eperusteet'][3]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">5</th>
+      <td>{{results1['eperusteet'][4]}}</td>
+      <td>{{results2['eperusteet'][4]}}</td>
+      <td>{{results3['eperusteet'][4]}}</td>
+      <td>{{results4['eperusteet'][4]}}</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>ESCO-taidot</h2>
+<table class="table">
+  <thead>
+    <tr>
+      <th class="idxcol">#</th>
+      <th class="rescol">TF-IDF</th>
+      <th class="rescol">FastText</th>
+      <th class="rescol">Sentence Transformer</th>
+      <th class="rescol">Yhdistelmä</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">1</th>
+      <td>{{results1['esco-taidot'][0]}}</td>
+      <td>{{results2['esco-taidot'][0]}}</td>
+      <td>{{results3['esco-taidot'][0]}}</td>
+      <td>{{results4['esco-taidot'][0]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">2</th>
+      <td>{{results1['esco-taidot'][1]}}</td>
+      <td>{{results2['esco-taidot'][1]}}</td>
+      <td>{{results3['esco-taidot'][1]}}</td>
+      <td>{{results4['esco-taidot'][1]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">3</th>
+      <td>{{results1['esco-taidot'][2]}}</td>
+      <td>{{results2['esco-taidot'][2]}}</td>
+      <td>{{results3['esco-taidot'][2]}}</td>
+      <td>{{results4['esco-taidot'][2]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">4</th>
+      <td>{{results1['esco-taidot'][3]}}</td>
+      <td>{{results2['esco-taidot'][3]}}</td>
+      <td>{{results3['esco-taidot'][3]}}</td>
+      <td>{{results4['esco-taidot'][3]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">5</th>
+      <td>{{results1['esco-taidot'][4]}}</td>
+      <td>{{results2['esco-taidot'][4]}}</td>
+      <td>{{results3['esco-taidot'][4]}}</td>
+      <td>{{results4['esco-taidot'][4]}}</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>ESCO-ammatit</h2>
+<table class="table">
+  <thead>
+    <tr>
+      <th class="idxcol">#</th>
+      <th class="rescol">TF-IDF</th>
+      <th class="rescol">FastText</th>
+      <th class="rescol">Sentence Transformer</th>
+      <th class="rescol">Yhdistelmä</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">1</th>
+      <td>{{results1['esco-ammatit'][0]}}</td>
+      <td>{{results2['esco-ammatit'][0]}}</td>
+      <td>{{results3['esco-ammatit'][0]}}</td>
+      <td>{{results4['esco-ammatit'][0]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">2</th>
+      <td>{{results1['esco-ammatit'][1]}}</td>
+      <td>{{results2['esco-ammatit'][1]}}</td>
+      <td>{{results3['esco-ammatit'][1]}}</td>
+      <td>{{results4['esco-ammatit'][1]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">3</th>
+      <td>{{results1['esco-ammatit'][2]}}</td>
+      <td>{{results2['esco-ammatit'][2]}}</td>
+      <td>{{results3['esco-ammatit'][2]}}</td>
+      <td>{{results4['esco-ammatit'][2]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">4</th>
+      <td>{{results1['esco-ammatit'][3]}}</td>
+      <td>{{results2['esco-ammatit'][3]}}</td>
+      <td>{{results3['esco-ammatit'][3]}}</td>
+      <td>{{results4['esco-ammatit'][3]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">5</th>
+      <td>{{results1['esco-ammatit'][4]}}</td>
+      <td>{{results2['esco-ammatit'][4]}}</td>
+      <td>{{results3['esco-ammatit'][4]}}</td>
+      <td>{{results4['esco-ammatit'][4]}}</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>KONFO-AMK</h2>
+<table class="table">
+  <thead>
+    <tr>
+      <th class="idxcol">#</th>
+      <th class="rescol">TF-IDF</th>
+      <th class="rescol">FastText</th>
+      <th class="rescol">Sentence Transformer</th>
+      <th class="rescol">Yhdistelmä</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">1</th>
+      <td>{{results1['konfo-amk'][0]}}</td>
+      <td>{{results2['konfo-amk'][0]}}</td>
+      <td>{{results3['konfo-amk'][0]}}</td>
+      <td>{{results4['konfo-amk'][0]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">2</th>
+      <td>{{results1['konfo-amk'][1]}}</td>
+      <td>{{results2['konfo-amk'][1]}}</td>
+      <td>{{results3['konfo-amk'][1]}}</td>
+      <td>{{results4['konfo-amk'][1]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">3</th>
+      <td>{{results1['konfo-amk'][2]}}</td>
+      <td>{{results2['konfo-amk'][2]}}</td>
+      <td>{{results3['konfo-amk'][2]}}</td>
+      <td>{{results4['konfo-amk'][2]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">4</th>
+      <td>{{results1['konfo-amk'][3]}}</td>
+      <td>{{results2['konfo-amk'][3]}}</td>
+      <td>{{results3['konfo-amk'][3]}}</td>
+      <td>{{results4['konfo-amk'][3]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">5</th>
+      <td>{{results1['konfo-amk'][4]}}</td>
+      <td>{{results2['konfo-amk'][4]}}</td>
+      <td>{{results3['konfo-amk'][4]}}</td>
+      <td>{{results4['konfo-amk'][4]}}</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>KONFO-YO</h2>
+<table class="table">
+  <thead>
+    <tr>
+      <th class="idxcol">#</th>
+      <th class="rescol">TF-IDF</th>
+      <th class="rescol">FastText</th>
+      <th class="rescol">Sentence Transformer</th>
+      <th class="rescol">Yhdistelmä</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">1</th>
+      <td>{{results1['konfo-yo'][0]}}</td>
+      <td>{{results2['konfo-yo'][0]}}</td>
+      <td>{{results3['konfo-yo'][0]}}</td>
+      <td>{{results4['konfo-yo'][0]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">2</th>
+      <td>{{results1['konfo-yo'][1]}}</td>
+      <td>{{results2['konfo-yo'][1]}}</td>
+      <td>{{results3['konfo-yo'][1]}}</td>
+      <td>{{results4['konfo-yo'][1]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">3</th>
+      <td>{{results1['konfo-yo'][2]}}</td>
+      <td>{{results2['konfo-yo'][2]}}</td>
+      <td>{{results3['konfo-yo'][2]}}</td>
+      <td>{{results4['konfo-yo'][2]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">4</th>
+      <td>{{results1['konfo-yo'][3]}}</td>
+      <td>{{results2['konfo-yo'][3]}}</td>
+      <td>{{results3['konfo-yo'][3]}}</td>
+      <td>{{results4['konfo-yo'][3]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">5</th>
+      <td>{{results1['konfo-yo'][4]}}</td>
+      <td>{{results2['konfo-yo'][4]}}</td>
+      <td>{{results3['konfo-yo'][4]}}</td>
+      <td>{{results4['konfo-yo'][4]}}</td>
+    </tr>
+  </tbody>
+</table>
+
+
+{% endblock %}
+  

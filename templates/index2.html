@@ -1,0 +1,168 @@
+{% extends "bootstrap/base.html" %}
+{% block title %}JOD-testi{% endblock %}
+
+{% block navbar %}
+<div class="navbar navbar-fixed-top">
+  <!-- ... -->
+</div>
+{% endblock %}
+
+{% block styles %}
+{{super()}}
+<link rel="stylesheet"
+      href="{{url_for('.static', filename='mystyle.css')}}">
+{% endblock %}
+
+{% block content %}
+<h1>JOD-kohtaantokokeilu 2</h1>
+
+<form method="POST" action="/">
+    {{ form.csrf_token }}
+    <div class="body-content">
+      <div class="container-fluid">
+        <br/>
+	<div class="row">
+	  <div class="col-md-12">
+            {{ form.name.label }} {{ form.name(size=100) }}
+          </div>          
+	</div>
+        <br/>
+	<div class="row">
+	  <div class="col-md-2">
+            {{ form.educ.label }} {{ form.educ }}
+	  </div>
+          <div class="col-md-2">
+            <br/> <br/> 
+            {{ form.tamm.label }}
+            <br/>
+            {{ form.tamk.label }}
+            <br/>
+            {{ form.t_yo.label }}
+	  </div>
+          <div class="col-md-8">
+            <br/> <br/> 
+            {{ form.tamm }}
+            <br/> 
+            {{ form.tamk }}
+            <br/>
+            {{ form.t_yo }}     
+        </div>
+      </div>
+    </div>      
+    <br/>
+    <div class="row">
+      <div class="col-md-12">
+        <input type="submit" value="Hae">
+      </div>          
+    </div>
+</form>
+
+<br/><br/>
+Lemmatisoitu kiinnostus: {{lemmatized}}<br/>
+Koulutus: {{ form.educ.data }}<br/>
+Tutkinnot: {{ form.tamm.data }} {{ form.tamk.data }} {{ form.t_yo.data }}
+
+<h2>Koulutukset</h2>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th class="idxcol">#</th>
+      <th class="rescol">TF-IDF</th>
+      <th class="rescol">FastText</th>
+      <th class="rescol">Sentence Transformer</th>
+      <th class="rescol">Yhdistelmä</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">1</th>
+      <td>{{results1['education'][0]}}</td>
+      <td>{{results2['education'][0]}}</td>
+      <td>{{results3['education'][0]}}</td>
+      <td>{{results4['education'][0]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">2</th>
+      <td>{{results1['education'][1]}}</td>
+      <td>{{results2['education'][1]}}</td>
+      <td>{{results3['education'][1]}}</td>
+      <td>{{results4['education'][1]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">3</th>
+      <td>{{results1['education'][2]}}</td>
+      <td>{{results2['education'][2]}}</td>
+      <td>{{results3['education'][2]}}</td>
+      <td>{{results4['education'][2]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">4</th>
+      <td>{{results1['education'][3]}}</td>
+      <td>{{results2['education'][3]}}</td>
+      <td>{{results3['education'][3]}}</td>
+      <td>{{results4['education'][3]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">5</th>
+      <td>{{results1['education'][4]}}</td>
+      <td>{{results2['education'][4]}}</td>
+      <td>{{results3['education'][4]}}</td>
+      <td>{{results4['education'][4]}}</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Ammatit</h2>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th class="idxcol">#</th>
+      <th class="rescol">TF-IDF</th>
+      <th class="rescol">FastText</th>
+      <th class="rescol">Sentence Transformer</th>
+      <th class="rescol">Yhdistelmä</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">1</th>
+      <td>{{results1['occupations'][0]}}</td>
+      <td>{{results2['occupations'][0]}}</td>
+      <td>{{results3['occupations'][0]}}</td>
+      <td>{{results4['occupations'][0]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">2</th>
+      <td>{{results1['occupations'][1]}}</td>
+      <td>{{results2['occupations'][1]}}</td>
+      <td>{{results3['occupations'][1]}}</td>
+      <td>{{results4['occupations'][1]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">3</th>
+      <td>{{results1['occupations'][2]}}</td>
+      <td>{{results2['occupations'][2]}}</td>
+      <td>{{results3['occupations'][2]}}</td>
+      <td>{{results4['occupations'][2]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">4</th>
+      <td>{{results1['occupations'][3]}}</td>
+      <td>{{results2['occupations'][3]}}</td>
+      <td>{{results3['occupations'][3]}}</td>
+      <td>{{results4['occupations'][3]}}</td>
+    </tr>
+    <tr>
+      <th scope="row">5</th>
+      <td>{{results1['occupations'][4]}}</td>
+      <td>{{results2['occupations'][4]}}</td>
+      <td>{{results3['occupations'][4]}}</td>
+      <td>{{results4['occupations'][4]}}</td>
+    </tr>
+  </tbody>
+</table>
+
+{% endblock %}
+  

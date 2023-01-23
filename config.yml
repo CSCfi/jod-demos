@@ -1,0 +1,18 @@
+
+datadir: "/media/gpu-data/jod"
+ftmodel: "/media/gpu-data/fasttext/cc.fi.300.bin"
+stmodel: 'TurkuNLP/sbert-cased-finnish-paraphrase'
+lemmatizer: "voikko"
+
+dataset1: "ammattitieto.ammatit-2022-10-05"
+embfile1: "ammattitieto.ammatit-2022-10-05-TurkuNLP-sbert-cased-finnish-paraphrase-combinedText.npy"
+dataset2: "eperusteet-data-2022-11-07"
+embfile2: "eperusteet-data-2022-11-07-TurkuNLP-sbert-cased-finnish-paraphrase-kuvaus-fi-nohtml.npy"
+dataset3: "skills_fi.csv"
+embfile3: "skills_fi.csv-TurkuNLP-sbert-cased-finnish-paraphrase-description.npy"
+dataset4: "occupations_fi.csv"
+embfile4: "occupations_fi.csv-TurkuNLP-sbert-cased-finnish-paraphrase-description.npy"
+dataset5: "konfo-amk-2023-01-18"
+embfile5: "konfo-amk-2023-01-18-TurkuNLP-sbert-cased-finnish-paraphrase-kuvaus-fi.npy"
+dataset6: "konfo-yo-2023-01-18"
+embfile6: "konfo-yo-2023-01-18-TurkuNLP-sbert-cased-finnish-paraphrase-kuvaus-fi.npy"
