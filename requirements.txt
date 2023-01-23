@@ -6,6 +6,6 @@ numpy
 pandas
 scipy
 joblib
-sklearn
+scikit-learn
 nltk
 libvoikko
