@@ -1,0 +1,14 @@
+flask
+flask_bootstrap
+flask_wtf
+wtforms
+numpy
+pandas
+scipy
+joblib
+sklearn
+fasttext
+sentence_transformers
+requests
+nltk
+libvoikko
