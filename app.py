@@ -28,7 +28,7 @@ Bootstrap(app)
 class MyForm(FlaskForm):
     name = StringField('hakulause:', validators=[DataRequired()])
 
-DO_TFIDF, DO_FT, DO_STRANS = True, True, True
+DO_TFIDF, DO_FT, DO_STRANS = True, False, False
 assert DO_TFIDF or DO_FT or DO_STRANS, "At least one algorithm needed"
 
 cfg = read_config()

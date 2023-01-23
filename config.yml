@@ -1,6 +1,6 @@
 
-datadir: "/media/gpu-data/jod"
-ftmodel: "/media/gpu-data/fasttext/cc.fi.300.bin"
+datadir: "data"
+ftmodel: "data/fasttext/cc.fi.300.bin"
 stmodel: 'TurkuNLP/sbert-cased-finnish-paraphrase'
 lemmatizer: "voikko"
 
