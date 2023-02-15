@@ -14,6 +14,10 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
+import fasttext as ft
+
+from sentence_transformers import SentenceTransformer
+
 from lemmatizer import lemmatize, test_lemmatizer
 
 from yamlconfig import read_config
@@ -24,7 +28,7 @@ Bootstrap(app)
 class MyForm(FlaskForm):
     name = StringField('hakulause:', validators=[DataRequired()])
 
-DO_TFIDF, DO_FT, DO_STRANS = True, False, False
+DO_TFIDF, DO_FT, DO_STRANS = True, True, True
 assert DO_TFIDF or DO_FT or DO_STRANS, "At least one algorithm needed"
 
 cfg = read_config()
@@ -43,11 +47,12 @@ if DO_TFIDF:
     X_tfidf5 = joblib.load('{}/konfo/{}-{}-tfidf-mat.pkl'.format(cfg['datadir'], cfg['dataset5'], cfg['lemmatizer']))
     vectorizer6 = joblib.load('{}/konfo/{}-{}-tfidf.pkl'.format(cfg['datadir'], cfg['dataset6'], cfg['lemmatizer']))
     X_tfidf6 = joblib.load('{}/konfo/{}-{}-tfidf-mat.pkl'.format(cfg['datadir'], cfg['dataset6'], cfg['lemmatizer']))
+    vectorizer7 = joblib.load('{}/tmt/avo/{}-{}-tfidf.pkl'.format(cfg['datadir'], cfg['dataset7'], cfg['lemmatizer']))
+    X_tfidf7 = joblib.load('{}/tmt/avo/{}-{}-tfidf-mat.pkl'.format(cfg['datadir'], cfg['dataset7'], cfg['lemmatizer']))
 else:
     print('Skipping TF-IDF')
 
 if DO_FT:
-    import fasttext as ft
     print('Loading FastText model:', cfg['ftmodel'])
     model_ft = ft.load_model(cfg['ftmodel'])
     X_ft1 = joblib.load('{}/tmt/{}-{}-fasttext.pkl'.format(cfg['datadir'], cfg['dataset1'], cfg['lemmatizer']))
@@ -56,11 +61,11 @@ if DO_FT:
     X_ft4 = joblib.load('{}/esco/fi/{}-{}-fasttext.pkl'.format(cfg['datadir'], cfg['dataset4'], cfg['lemmatizer']))
     X_ft5 = joblib.load('{}/konfo/{}-{}-fasttext.pkl'.format(cfg['datadir'], cfg['dataset5'], cfg['lemmatizer']))
     X_ft6 = joblib.load('{}/konfo/{}-{}-fasttext.pkl'.format(cfg['datadir'], cfg['dataset6'], cfg['lemmatizer']))
+    X_ft7 = joblib.load('{}/tmt/avo/{}-{}-fasttext.pkl'.format(cfg['datadir'], cfg['dataset7'], cfg['lemmatizer']))
 else:
     print('Skipping FastText')
 
 if DO_STRANS:
-    from sentence_transformers import SentenceTransformer
     print('Loading Sentence Transformer model:', cfg['stmodel'])
     model_strans = SentenceTransformer(cfg['stmodel'])
     Xemb1 = np.load(cfg['datadir']+'/tmt/'+cfg['embfile1'])
@@ -69,6 +74,7 @@ if DO_STRANS:
     Xemb4 = np.load(cfg['datadir']+'/esco/fi/'+cfg['embfile4'])
     Xemb5 = np.load(cfg['datadir']+'/konfo/'+cfg['embfile5'])
     Xemb6 = np.load(cfg['datadir']+'/konfo/'+cfg['embfile6'])
+    Xemb7 = np.load(cfg['datadir']+'/tmt/avo/'+cfg['embfile7'])
 else:
     print('Skipping Sentence Transformer')
 
@@ -82,6 +88,8 @@ df5 = pd.read_csv('{}/konfo/{}.csv'.format(cfg['datadir'], cfg['dataset5']))
 df5 = df5.set_index('nimi-fi')
 df6 = pd.read_csv('{}/konfo/{}.csv'.format(cfg['datadir'], cfg['dataset6']))
 df6 = df6.set_index('nimi-fi')
+df7 = pd.read_csv('{}/tmt/avo/{}.csv'.format(cfg['datadir'], cfg['dataset7']))
+df7 = df7.set_index('name')
 
 print('Testing lemmatizer:', cfg['lemmatizer'])
 test_lemmatizer(cfg['lemmatizer'])
@@ -101,7 +109,9 @@ def get_tfidf(txt):
     res5 = cosine_similarity(X_tfidf5, query_vec5).squeeze()
     query_vec6 = vectorizer6.transform([txt])
     res6 = cosine_similarity(X_tfidf6, query_vec6).squeeze()
-    return [res1, res2, res3, res4, res5, res6]
+    query_vec7 = vectorizer7.transform([txt])
+    res7 = cosine_similarity(X_tfidf7, query_vec7).squeeze()
+    return [res1, res2, res3, res4, res5, res6, res7]
     
 def get_fasttext(txt):
     query_ft = model_ft.get_sentence_vector(txt)
@@ -111,7 +121,8 @@ def get_fasttext(txt):
     res4 = cosine_similarity(X_ft4, query_ft.reshape(1, -1)).squeeze()
     res5 = cosine_similarity(X_ft5, query_ft.reshape(1, -1)).squeeze()
     res6 = cosine_similarity(X_ft6, query_ft.reshape(1, -1)).squeeze()
-    return [res1, res2, res3, res4, res5, res6]
+    res7 = cosine_similarity(X_ft7, query_ft.reshape(1, -1)).squeeze()
+    return [res1, res2, res3, res4, res5, res6, res7]
 
 def cos_sim(a, b): 
     return np.dot(a, b)/(np.linalg.norm(a)*np.linalg.norm(b))
@@ -137,7 +148,10 @@ def get_strans(txt):
     res6 = np.zeros(len(Xemb6))
     for i in range(len(Xemb6)):
         res6[i] = cos_sim(qemb, Xemb6[i])
-    return [res1, res2, res3, res4, res5, res6]
+    res7 = np.zeros(len(Xemb7))
+    for i in range(len(Xemb7)):
+        res7[i] = cos_sim(qemb, Xemb7[i])
+    return [res1, res2, res3, res4, res5, res6, res7]
 
 def get_results(res_tfidf, res_fasttext, res_strans):
     if res_tfidf is not None:
@@ -147,16 +161,18 @@ def get_results(res_tfidf, res_fasttext, res_strans):
         df4['res_tfidf'] = res_tfidf[3]
         df5['res_tfidf'] = res_tfidf[4]
         df6['res_tfidf'] = res_tfidf[5]
+        df7['res_tfidf'] = res_tfidf[6]
         tfidfdict = {'ammattitieto': df1.sort_values('res_tfidf', ascending=False).index.tolist()[:5],
                      'eperusteet': df2.sort_values('res_tfidf', ascending=False)['nimi-fi'].tolist()[:5],
                      'esco-taidot': df3.sort_values('res_tfidf', ascending=False)['preferredLabel'].tolist()[:5],
                      'esco-ammatit': df4.sort_values('res_tfidf', ascending=False)['preferredLabel'].tolist()[:5],
                      'konfo-amk': df5.sort_values('res_tfidf', ascending=False).index.tolist()[:5],
-                     'konfo-yo': df6.sort_values('res_tfidf', ascending=False).index.tolist()[:5]}
+                     'konfo-yo': df6.sort_values('res_tfidf', ascending=False).index.tolist()[:5],
+                     'avo': df7.sort_values('res_tfidf', ascending=False).index.tolist()[:5]}
     else:
         tfidfdict = {'ammattitieto': ["-"]*5, 'eperusteet': ["-"]*5,
                      'esco-taidot': ["-"]*5, 'esco-ammatit': ["-"]*5,
-                     'konfo-amk': ["-"]*5, 'konfo-yo': ["-"]*5}
+                     'konfo-amk': ["-"]*5, 'konfo-yo': ["-"]*5, 'avo': ["-"]*5}
 
         
     if res_fasttext is not None:
@@ -166,16 +182,18 @@ def get_results(res_tfidf, res_fasttext, res_strans):
         df4['res_fasttext'] = res_fasttext[3]
         df5['res_fasttext'] = res_fasttext[4]
         df6['res_fasttext'] = res_fasttext[5]
+        df7['res_fasttext'] = res_fasttext[6]
         fasttextdict = {'ammattitieto': df1.sort_values('res_fasttext', ascending=False).index.tolist()[:5],
                         'eperusteet': df2.sort_values('res_fasttext', ascending=False)['nimi-fi'].tolist()[:5],
                         'esco-taidot': df3.sort_values('res_fasttext', ascending=False)['preferredLabel'].tolist()[:5],
                         'esco-ammatit': df4.sort_values('res_fasttext', ascending=False)['preferredLabel'].tolist()[:5],
                         'konfo-amk': df5.sort_values('res_fasttext', ascending=False).index.tolist()[:5],
-                        'konfo-yo': df6.sort_values('res_fasttext', ascending=False).index.tolist()[:5]}
+                        'konfo-yo': df6.sort_values('res_fasttext', ascending=False).index.tolist()[:5],
+                        'avo': df7.sort_values('res_fasttext', ascending=False).index.tolist()[:5]}
     else:
         fasttextdict =  {'ammattitieto': ["-"]*5, 'eperusteet': ["-"]*5,
                          'esco-taidot': ["-"]*5, 'esco-ammatit': ["-"]*5,
-                         'konfo-amk': ["-"]*5, 'konfo-yo': ["-"]*5}
+                         'konfo-amk': ["-"]*5, 'konfo-yo': ["-"]*5, 'avo': ["-"]*5}
 
     if res_strans is not None:
         df1['res_strans'] = res_strans[0]
@@ -184,16 +202,18 @@ def get_results(res_tfidf, res_fasttext, res_strans):
         df4['res_strans'] = res_strans[3]
         df5['res_strans'] = res_strans[4]
         df6['res_strans'] = res_strans[5]
+        df7['res_strans'] = res_strans[6]
         stransdict = {'ammattitieto': df1.sort_values('res_strans', ascending=False).index.tolist()[:5],
                       'eperusteet': df2.sort_values('res_strans', ascending=False)['nimi-fi'].tolist()[:5],
                       'esco-taidot': df3.sort_values('res_strans', ascending=False)['preferredLabel'].tolist()[:5],
                       'esco-ammatit': df4.sort_values('res_strans', ascending=False)['preferredLabel'].tolist()[:5],
                       'konfo-amk': df5.sort_values('res_strans', ascending=False).index.tolist()[:5],
-                      'konfo-yo': df6.sort_values('res_strans', ascending=False).index.tolist()[:5]}
+                      'konfo-yo': df6.sort_values('res_strans', ascending=False).index.tolist()[:5],
+                      'avo': df7.sort_values('res_strans', ascending=False).index.tolist()[:5]}
     else:
         stransdict =  {'ammattitieto': ["-"]*5, 'eperusteet': ["-"]*5,
                        'esco-taidot': ["-"]*5, 'esco-ammatit': ["-"]*5,
-                       'konfo-amk': ["-"]*5, 'konfo-yo': ["-"]*5}
+                       'konfo-amk': ["-"]*5, 'konfo-yo': ["-"]*5, 'avo': ["-"]*5}
 
     if all(r is not None for r in [res_tfidf, res_fasttext, res_strans]):
         df1['res_combined'] = np.mean(np.array([res_tfidf[0], res_fasttext[0], res_strans[0]]), axis=0)
@@ -202,16 +222,18 @@ def get_results(res_tfidf, res_fasttext, res_strans):
         df4['res_combined'] = np.mean(np.array([res_tfidf[3], res_fasttext[3], res_strans[3]]), axis=0)
         df5['res_combined'] = np.mean(np.array([res_tfidf[4], res_fasttext[4], res_strans[4]]), axis=0)
         df6['res_combined'] = np.mean(np.array([res_tfidf[5], res_fasttext[5], res_strans[5]]), axis=0)
+        df7['res_combined'] = np.mean(np.array([res_tfidf[6], res_fasttext[6], res_strans[6]]), axis=0)
         combineddict = {'ammattitieto': df1.sort_values('res_combined', ascending=False).index.tolist()[:5],
                         'eperusteet': df2.sort_values('res_combined', ascending=False)['nimi-fi'].tolist()[:5],
                         'esco-taidot': df3.sort_values('res_combined', ascending=False)['preferredLabel'].tolist()[:5],
                         'esco-ammatit': df4.sort_values('res_combined', ascending=False)['preferredLabel'].tolist()[:5],
                         'konfo-amk': df5.sort_values('res_combined', ascending=False).index.tolist()[:5],
-                        'konfo-yo': df6.sort_values('res_combined', ascending=False).index.tolist()[:5]}
+                        'konfo-yo': df6.sort_values('res_combined', ascending=False).index.tolist()[:5],
+                        'avo': df7.sort_values('res_combined', ascending=False).index.tolist()[:5]}
     else:
         combineddict =  {'ammattitieto': ["-"]*5, 'eperusteet': ["-"]*5,
                          'esco-taidot': ["-"]*5, 'esco-ammatit': ["-"]*5,
-                         'konfo-amk': ["-"]*5, 'konfo-yo': ["-"]*5}
+                         'konfo-amk': ["-"]*5, 'konfo-yo': ["-"]*5, 'avo': ["-"]*5}
 
     return {'tfidf': tfidfdict, 'fasttext': fasttextdict,
             'strans': stransdict, 'combined': combineddict}
