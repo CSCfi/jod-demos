@@ -2,7 +2,7 @@
 datadir: "data"
 ftmodel: "data/fasttext/cc.fi.300.bin"
 stmodel: 'TurkuNLP/sbert-cased-finnish-paraphrase'
-lemmatizer: "voikko"
+lemmatizer: "snowball"
 
 dataset1: "ammattitieto.ammatit-2022-10-05"
 embfile1: "ammattitieto.ammatit-2022-10-05-TurkuNLP-sbert-cased-finnish-paraphrase-combinedText.npy"

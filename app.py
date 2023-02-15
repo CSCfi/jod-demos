@@ -18,8 +18,6 @@ import fasttext as ft
 
 from sentence_transformers import SentenceTransformer
 
-from lemmatizer import lemmatize, test_lemmatizer
-
 from yamlconfig import read_config
 
 app = flask.Flask(__name__)
@@ -32,6 +30,14 @@ DO_TFIDF, DO_FT, DO_STRANS = True, True, True
 assert DO_TFIDF or DO_FT or DO_STRANS, "At least one algorithm needed"
 
 cfg = read_config()
+if cfg['lemmatizer'] == "tnpp":
+    from lemmatizer_tnpp import lemmatize, test_lemmatizer
+elif cfg['lemmatizer'] == "voikko":
+    from lemmatizer_voikko import lemmatize, test_lemmatizer
+elif cfg['lemmatizer'] == "snowball":
+    from stemmer_snowball import lemmatize, test_lemmatizer
+else:
+    assert 0, "Unknown lemmatizer: "+cfg['lemmatizer']
 
 if DO_TFIDF:
     print('Loading TF-IDF models')
@@ -92,7 +98,7 @@ df7 = pd.read_csv('{}/tmt/avo/{}.csv'.format(cfg['datadir'], cfg['dataset7']))
 df7 = df7.set_index('name')
 
 print('Testing lemmatizer:', cfg['lemmatizer'])
-test_lemmatizer(cfg['lemmatizer'])
+test_lemmatizer()
 
 print('All done')
 
@@ -244,7 +250,7 @@ def parse_get():
     txt=flask.request.args.get("text")
     if not txt:
         txt = "pidän lentämisestä ja lentokoneista"
-    txt_lem = lemmatize(txt, cfg['lemmatizer'])
+    txt_lem = lemmatize(txt)
 
     res = get_results(get_tfidf(txt_lem) if DO_TFIDF else None,
                       get_fasttext(txt_lem) if DO_FT else None,
@@ -266,7 +272,7 @@ def parse_post():
     txt = form.name.data
     if not txt:
         return """Error occurred""", 400
-    txt_lem = lemmatize(txt, cfg['lemmatizer'])
+    txt_lem = lemmatize(txt)
     res = get_results(get_tfidf(txt_lem) if DO_TFIDF else None,
                       get_fasttext(txt_lem) if DO_FT else None,
                       get_strans(txt) if DO_STRANS else None)
