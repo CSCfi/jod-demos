@@ -21,40 +21,70 @@
     <div class="body-content">
       <div class="container-fluid">
         <br/>
-	<div class="row">
-	  <div class="col-md-12">
-            {{ form.name.label }} {{ form.name(size=100) }}
-          </div>          
-	</div>
+        <div class="row">
+          <div class="col-md-1">
+            {{ form.name.label }}
+          </div>
+          <div class="col-md-11">
+            {{ form.name(style="width:100%;") }}
+          </div>
+        </div>
         <br/>
-	<div class="row">
-	  <div class="col-md-2">
-            {{ form.educ.label }} {{ form.educ }}
-	  </div>
+        <div class="row">
           <div class="col-md-2">
-            <br/> <br/> 
+            {{ form.educ.label }} {{ form.educ }}
+          </div>
+          <div class="col-md-2">
+            <br/> <br/>
             {{ form.tamm.label }}
             <br/>
             {{ form.tamk.label }}
             <br/>
             {{ form.t_yo.label }}
-	  </div>
+          </div>
           <div class="col-md-8">
-            <br/> <br/> 
-            {{ form.tamm }}
-            <br/> 
-            {{ form.tamk }}
+            <br/> <br/>
+            {{ form.tamm(style="width:70%;") }}
             <br/>
-            {{ form.t_yo }}     
+            {{ form.tamk(style="width:70%;") }}
+            <br/>
+            {{ form.t_yo(style="width:70%;") }}
+          </div>
+        </div>
+        <br/>
+        <div class="row">
+          <div class="col-md-12">
+            <b>Ammatit:</b>
+          </div>
+        </div>
+        <br/>
+        <div class="row">
+          <div class="col-md-3">
+            <ul><li>{{ form.afie.label }}</li></ul>
+            &nbsp; &nbsp; &nbsp; {{ form.afie(style="width:90%;") }}
+          </div>
+          <div class="col-md-3">
+            <ul><li>{{ form.aatt.label }}</li></ul>
+            &nbsp; &nbsp; &nbsp; {{ form.aatt(style="width:90%;") }}
+          </div>
+          <div class="col-md-3">
+            <ul><li>{{ form.ares.label }}</li></ul>
+            &nbsp; &nbsp; &nbsp; {{ form.ares(style="width:90%;") }}
+          </div>
+          <div class="col-md-3">
+            <ul><li>{{ form.aria.label }}</li></ul>
+            &nbsp; &nbsp; &nbsp; 1. {{ form.aria(style="width:70%;") }}
+            <br/>
+            &nbsp; &nbsp; &nbsp; 2. {{ form.ari2(style="width:70%;") }}
+          </div>
+        </div>
+        <br/>
+        <div class="row">
+          <div class="col-md-12">
+            <input type="submit" value="Hae koulutuksia ja ammatteja">
+          </div>
         </div>
       </div>
-    </div>      
-    <br/>
-    <div class="row">
-      <div class="col-md-12">
-        <input type="submit" value="Hae">
-      </div>          
-    </div>
 </form>
 
 <br/><br/>
@@ -165,4 +195,3 @@ Tutkinnot: {{ form.tamm.data }} {{ form.tamk.data }} {{ form.t_yo.data }}
 </table>
 
 {% endblock %}
-  
