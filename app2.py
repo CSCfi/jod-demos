@@ -27,10 +27,12 @@ from yamlconfig import read_config
 app = flask.Flask(__name__)
 Bootstrap(app)
 
-DO_TFIDF, DO_FT, DO_STRANS = True, True, True
-assert DO_TFIDF or DO_FT or DO_STRANS, "At least one algorithm needed"
-
 cfg = read_config()
+debug = cfg['debug']
+
+assert cfg['do_tfidf'] or cfg['do_ft'] or cfg['do_strans'], (
+    "At least one algorithm needed")
+
 if cfg['lemmatizer'] == "tnpp":
     from lemmatizer_tnpp import lemmatize, test_lemmatizer
 elif cfg['lemmatizer'] == "voikko":
@@ -40,7 +42,7 @@ elif cfg['lemmatizer'] == "snowball":
 else:
     assert 0, "Unknown lemmatizer: "+cfg['lemmatizer']
 
-if DO_TFIDF:
+if cfg['do_tfidf']:
     print('Loading TF-IDF models')
     vectorizer1 = joblib.load('{}/tmt/{}-{}-tfidf.pkl'.format(cfg['datadir'], cfg['dataset1'], cfg['lemmatizer']))
     X_tfidf1 = joblib.load('{}/tmt/{}-{}-tfidf-mat.pkl'.format(cfg['datadir'], cfg['dataset1'], cfg['lemmatizer']))
@@ -59,7 +61,7 @@ if DO_TFIDF:
 else:
     print('Skipping TF-IDF')
 
-if DO_FT:
+if cfg['do_ft']:
     print('Loading FastText model:', cfg['ftmodel'])
     model_ft = ft.load_model(cfg['ftmodel'])
     X_ft1 = joblib.load('{}/tmt/{}-{}-fasttext.pkl'.format(cfg['datadir'], cfg['dataset1'], cfg['lemmatizer']))
@@ -72,7 +74,7 @@ if DO_FT:
 else:
     print('Skipping FastText')
 
-if DO_STRANS:
+if cfg['do_strans']:
     print('Loading Sentence Transformer model:', cfg['stmodel'])
     model_strans = SentenceTransformer(cfg['stmodel'])
     Xemb1 = np.load(cfg['datadir']+'/tmt/'+cfg['embfile1'])
@@ -97,7 +99,10 @@ df5 = df5.rename(columns={"Unnamed: 0": "id"})
 df6 = pd.read_csv('{}/konfo/{}.csv'.format(cfg['datadir'], cfg['dataset6']))
 df6 = df6.set_index('nimi-fi')
 df6 = df6.rename(columns={"Unnamed: 0": "id"})
-df7 = pd.read_csv('{}/tmt/avo/{}.csv'.format(cfg['datadir'], cfg['dataset7']))
+df7 = pd.read_csv('{}/tmt/avo/{}.csv'.format(cfg['datadir'], cfg['dataset7']),
+                  converters={'avo-attributes-int': pd.eval,
+                              'avo-restrictions-int': pd.eval,
+                              'avo-code-int': pd.eval})
 df7 = df7.set_index('name')
 
 with open('{}/tmt/avo/avo-fields.json'.format(cfg['datadir']), encoding='utf-8') as fh:
@@ -110,6 +115,13 @@ avo_riasec = ["R (realistic, käytännöllinen)", "I (investigative, tieteelline
               "A (artistic, taiteellinen)", "S (social, sosiaalinen)",
               "E (enterprising, yrittävä)", "C (conventional, systemaattinen)"]
 
+df7['avo-field-int'] = df7['avo-field-int'].astype(int)
+df7_attrib = df7['avo-attributes-int'].apply(pd.Series)
+df7_attrib = df7_attrib.fillna(-1).astype(int)
+df7_restr = df7['avo-restrictions-int'].apply(pd.Series)
+df7_restr = df7_restr.fillna(-1).astype(int)
+df7_riasec = df7['avo-code-int'].apply(pd.Series)
+
 print('Testing lemmatizer:', cfg['lemmatizer'])
 test_lemmatizer()
 
@@ -118,7 +130,8 @@ print('All done')
 # ----------------------------------------------------------------------
 
 def get_edutxt(educ, tamm, tamk, t_yo):
-    #print(educ, tamm, tamk, t_yo)
+    if debug:
+        print(educ, tamm, tamk, t_yo)
     txt = None
     if educ == "amm" and tamm > -1:
         txt = df2[df2['id'] == tamm]['kuvaus-fi-nohtml'].values[0]
@@ -195,7 +208,7 @@ def get_strans(txt_int, txt_edu=None):
             _strans(qemb_int, qemb_edu, Xemb6),
             _strans(qemb_int, qemb_edu, Xemb7)]
 
-def _get_result(res, educ_level):
+def _get_result(res, educ_level, fields, attributes, restrictions, riasec):
     if res is not None:
         r1 = pd.Series(res[0], index=df1.index).add_suffix(' (ammattitieto)')
         r2 = pd.Series(res[1], index=df2['nimi-fi']).add_suffix(' (eperusteet)')
@@ -219,17 +232,52 @@ def _get_result(res, educ_level):
         else:
             r_edu = pd.concat([r2, r5, r6])
 
+        if '-1' not in fields:
+            fields = [int(f) for f in fields]
+            df7['field-tmp'] = df7['avo-field-int'].isin(fields)
+            if debug:
+                print('Ammattialat:', len(df7[df7['field-tmp']]), fields)
+                print(" ".join(list(df7[df7['field-tmp']].index)))
+            r_occ = r_occ*(1.0 + 1.0*df7['field-tmp'])
+
+        if '-1' not in attributes:
+            attributes = [int(a) for a in attributes]
+            df7['attrib-tmp'] = df7_attrib.isin(attributes).any(axis=1)
+            if debug:
+                print('Työn sisältö:', len(df7[df7['attrib-tmp']]), attributes)
+                print(" ".join(list(df7[df7['attrib-tmp']].index)))
+            r_occ = r_occ*(1.0 + 1.0*df7['attrib-tmp'])
+
+        if '-1' not in restrictions:
+            restrictions = [int(r) for r in restrictions]
+            df7['restr-tmp'] = df7_restr.isin(restrictions).any(axis=1)
+            if debug:
+                print('Rajoitukset:', len(df7[df7['restr-tmp']]), restrictions)
+                print(" ".join(list(df7[df7['restr-tmp']].index)))
+            r_occ = r_occ*(~df7['restr-tmp'])
+
+        if riasec != ('-1', '-1'):
+            riasec = tuple(map(int, riasec))
+            df7['riasec-tmp'] = df7_riasec.isin(riasec).any(axis=1)
+            if debug:
+                print('RIASEC:', len(df7[df7['riasec-tmp']]), riasec)
+                print(" ".join(list(df7[df7['riasec-tmp']].index)))
+            r_occ = r_occ*(1.0 + 1.0*df7['riasec-tmp'])
+
         r_occ = r_occ.add_suffix(' (avo)')
-            
+
         return {'education': r_edu.sort_values(ascending=False).index.tolist()[:5],
                 'occupations': r_occ.sort_values(ascending=False).index.tolist()[:5]}
     else:
         return {'education': ["-"]*5, 'occupations': ["-"]*5}
 
-def get_results(res_tfidf, res_fasttext, res_strans, educ_level="lukio"):
-    tfidfdict = _get_result(res_tfidf, educ_level)
-    fasttextdict = _get_result(res_fasttext, educ_level)
-    stransdict = _get_result(res_strans, educ_level)
+def get_results(res_tfidf, res_fasttext, res_strans,
+                educ_level="lukio", fields=['-1'], attributes=['-1'],
+                restrictions=['-1'], riasec=(-1, -1)):
+
+    tfidfdict = _get_result(res_tfidf, educ_level, fields, attributes, restrictions, riasec)
+    fasttextdict = _get_result(res_fasttext, educ_level, fields, attributes, restrictions, riasec)
+    stransdict = _get_result(res_strans, educ_level, fields, attributes, restrictions, riasec)
 
     if all(r is not None for r in [res_tfidf, res_fasttext, res_strans]):
         res_combined = []
@@ -239,7 +287,7 @@ def get_results(res_tfidf, res_fasttext, res_strans, educ_level="lukio"):
     else:
         res_combined = None
 
-    combineddict = _get_result(res_combined, educ_level)
+    combineddict = _get_result(res_combined, educ_level, fields, attributes, restrictions, riasec)
 
     return {'tfidf': tfidfdict, 'fasttext': fasttextdict,
             'strans': stransdict, 'combined': combineddict}
@@ -298,9 +346,9 @@ def parse_get():
         txt = "pidän lentämisestä ja lentokoneista"
     txt_lem = lemmatize(txt)
 
-    res = get_results(get_tfidf(txt_lem) if DO_TFIDF else None,
-                      get_fasttext(txt_lem) if DO_FT else None,
-                      get_strans(txt) if DO_STRANS else None)
+    res = get_results(get_tfidf(txt_lem) if cfg['do_tfidf'] else None,
+                      get_fasttext(txt_lem) if cfg['do_ft'] else None,
+                      get_strans(txt) if cfg['do_strans'] else None)
 
     form = MyForm(meta={'csrf': False})
     return flask.Response(flask.render_template("index2.html",
@@ -309,7 +357,7 @@ def parse_get():
                                                 results2=res['fasttext'],
                                                 results3=res['strans'],
                                                 results4=res['combined'],
-                                                form=form),
+                                                form=form, debug=debug),
                           mimetype="text/html; charset=utf-8")
 
 @app.route("/",methods=["POST"])
@@ -324,17 +372,19 @@ def parse_post():
                          int(form.tamk.data), int(form.t_yo.data))
     txt_edu_lem = lemmatize(txt_edu)
 
-    res = get_results(get_tfidf(txt_lem, txt_edu_lem) if DO_TFIDF else None,
-                      get_fasttext(txt_lem) if DO_FT else None,
-                      get_strans(txt) if DO_STRANS else None,
-                      form.educ.data)
+    res = get_results(get_tfidf(txt_lem, txt_edu_lem) if cfg['do_tfidf'] else None,
+                      get_fasttext(txt_lem, txt_edu_lem) if cfg['do_ft'] else None,
+                      get_strans(txt, txt_lem) if cfg['do_strans'] else None,
+                      form.educ.data, form.afie.data, form.aatt.data,
+                      form.ares.data, (form.aria.data, form.ari2.data))
+
     return flask.Response(flask.render_template("index2.html",
                                                 lemmatized=txt_lem,
                                                 results1=res['tfidf'],
                                                 results2=res['fasttext'],
                                                 results3=res['strans'],
                                                 results4=res['combined'],
-                                                form=form),
+                                                form=form, debug=debug),
                           mimetype="text/html; charset=utf-8")
 
 # ----------------------------------------------------------------------

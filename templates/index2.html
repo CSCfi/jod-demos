@@ -61,18 +61,26 @@
         <div class="row">
           <div class="col-md-3">
             <ul><li>{{ form.afie.label }}</li></ul>
+            &nbsp; &nbsp; &nbsp; Minua kiinnostaa erityisesti seuraavat alat:
+            <br/><br/>
             &nbsp; &nbsp; &nbsp; {{ form.afie(style="width:90%;") }}
           </div>
           <div class="col-md-3">
             <ul><li>{{ form.aatt.label }}</li></ul>
+            &nbsp; &nbsp; &nbsp; Haluaisin että työhöni sisältyisi seuraavia asioita:
+            <br/><br/>
             &nbsp; &nbsp; &nbsp; {{ form.aatt(style="width:90%;") }}
           </div>
           <div class="col-md-3">
             <ul><li>{{ form.ares.label }}</li></ul>
+            &nbsp; &nbsp; &nbsp; En halua ammatteja, joissa on seuraavat rajoitukset:
+            <br/><br/>
             &nbsp; &nbsp; &nbsp; {{ form.ares(style="width:90%;") }}
           </div>
           <div class="col-md-3">
             <ul><li>{{ form.aria.label }}</li></ul>
+            &nbsp; &nbsp; &nbsp; Olen tehnyt RIASEC-testin ja kiinnostukseni ovat:
+            <br/><br/>
             &nbsp; &nbsp; &nbsp; 1. {{ form.aria(style="width:70%;") }}
             <br/>
             &nbsp; &nbsp; &nbsp; 2. {{ form.ari2(style="width:70%;") }}
@@ -87,10 +95,15 @@
       </div>
 </form>
 
+{% if debug %}
 <br/><br/>
+<small>
 Lemmatisoitu kiinnostus: {{lemmatized}}<br/>
 Koulutus: {{ form.educ.data }}<br/>
-Tutkinnot: {{ form.tamm.data }} {{ form.tamk.data }} {{ form.t_yo.data }}
+Tutkinnot: {{ form.tamm.data }} {{ form.tamk.data }} {{ form.t_yo.data }}<br/>
+Ammatit: {{ form.afie.data }} {{ form.aatt.data }} {{ form.ares.data }} ( {{ form.aria.data }} {{ form.ari2.data }} )
+</small>
+{% endif %}
 
 <h2>Koulutukset</h2>
 
