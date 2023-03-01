@@ -2,8 +2,9 @@ import flask
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import (StringField, RadioField,
-                     SelectField, SelectMultipleField)
-from wtforms.validators import DataRequired
+                     SelectField, SelectMultipleField,
+                     IntegerRangeField)
+from wtforms.validators import DataRequired, Optional
 
 import numpy as np
 import pandas as pd
@@ -141,30 +142,37 @@ def get_edutxt(educ, tamm, tamk, t_yo):
         txt = df6[df6['id'] == t_yo]['kuvaus-fi'].values[0]
     return txt
 
-def _tfidf(txt_int, txt_edu, vectorizer, X):
-    query_vec_int = vectorizer.transform([txt_int])
+def _tfidf(txt_int, txt_edu, txt_ski, w, vect, X):
+    query_vec_int = vect.transform([txt_int])
     res = cosine_similarity(X, query_vec_int).squeeze()
+    weight = (np.exp(w)-1)/(np.exp(5)-1)
     if txt_edu is not None:
-        query_vec_edu = vectorizer.transform([txt_edu])
-        res += cosine_similarity(X, query_vec_edu).squeeze()
+        query_vec_edu = vect.transform([txt_edu])
+        res += weight*cosine_similarity(X, query_vec_edu).squeeze()
+    if txt_ski is not None:
+        query_vec_ski = vect.transform([txt_ski])
+        res += weight*cosine_similarity(X, query_vec_ski).squeeze()
     return res
 
-def get_tfidf(txt_int, txt_edu=None):
-    return [_tfidf(txt_int, txt_edu, vectorizer1, X_tfidf1),
-            _tfidf(txt_int, txt_edu, vectorizer2, X_tfidf2),
-            _tfidf(txt_int, txt_edu, vectorizer3, X_tfidf3),
-            _tfidf(txt_int, txt_edu, vectorizer4, X_tfidf4),
-            _tfidf(txt_int, txt_edu, vectorizer5, X_tfidf5),
-            _tfidf(txt_int, txt_edu, vectorizer6, X_tfidf6),
-            _tfidf(txt_int, txt_edu, vectorizer7, X_tfidf7)]
+def get_tfidf(txt_int, txt_edu=None, txt_ski=None, weighting=5):
+    return [_tfidf(txt_int, txt_edu, txt_ski, weighting, vectorizer1, X_tfidf1),
+            _tfidf(txt_int, txt_edu, txt_ski, weighting, vectorizer2, X_tfidf2),
+            _tfidf(txt_int, txt_edu, txt_ski, weighting, vectorizer3, X_tfidf3),
+            _tfidf(txt_int, txt_edu, txt_ski, weighting, vectorizer4, X_tfidf4),
+            _tfidf(txt_int, txt_edu, txt_ski, weighting, vectorizer5, X_tfidf5),
+            _tfidf(txt_int, txt_edu, txt_ski, weighting, vectorizer6, X_tfidf6),
+            _tfidf(txt_int, txt_edu, txt_ski, weighting, vectorizer7, X_tfidf7)]
 
-def _fasttext(q_int, q_edu, X):
+def _fasttext(q_int, q_edu, q_ski, w, X):
     res = cosine_similarity(X, q_int).squeeze()
+    weight = (np.exp(w)-1)/(np.exp(5)-1)
     if q_edu is not None:
-        res += cosine_similarity(X, q_edu).squeeze()
+        res += weight*cosine_similarity(X, q_edu).squeeze()
+    if q_ski is not None:
+        res += weight*cosine_similarity(X, q_ski).squeeze()
     return res
 
-def get_fasttext(txt_int, txt_edu=None):
+def get_fasttext(txt_int, txt_edu=None, txt_ski=None, weighting=5):
     query_ft_int = model_ft.get_sentence_vector(txt_int)
     query_ft_int = query_ft_int.reshape(1, -1)
     if txt_edu is not None:
@@ -172,41 +180,54 @@ def get_fasttext(txt_int, txt_edu=None):
         query_ft_edu = query_ft_edu.reshape(1, -1)
     else:
         query_ft_edu = None
+    if txt_ski is not None:
+        query_ft_ski = model_ft.get_sentence_vector(txt_ski)
+        query_ft_ski = query_ft_ski.reshape(1, -1)
+    else:
+        query_ft_ski = None
 
-    return [_fasttext(query_ft_int, query_ft_edu, X_ft1),
-            _fasttext(query_ft_int, query_ft_edu, X_ft2),
-            _fasttext(query_ft_int, query_ft_edu, X_ft3),
-            _fasttext(query_ft_int, query_ft_edu, X_ft4),
-            _fasttext(query_ft_int, query_ft_edu, X_ft5),
-            _fasttext(query_ft_int, query_ft_edu, X_ft6),
-            _fasttext(query_ft_int, query_ft_edu, X_ft7)]
+    return [_fasttext(query_ft_int, query_ft_edu, query_ft_ski, weighting, X_ft1),
+            _fasttext(query_ft_int, query_ft_edu, query_ft_ski, weighting, X_ft2),
+            _fasttext(query_ft_int, query_ft_edu, query_ft_ski, weighting, X_ft3),
+            _fasttext(query_ft_int, query_ft_edu, query_ft_ski, weighting, X_ft4),
+            _fasttext(query_ft_int, query_ft_edu, query_ft_ski, weighting, X_ft5),
+            _fasttext(query_ft_int, query_ft_edu, query_ft_ski, weighting, X_ft6),
+            _fasttext(query_ft_int, query_ft_edu, query_ft_ski, weighting, X_ft7)]
 
 def cos_sim(a, b):
     return np.dot(a, b)/(np.linalg.norm(a)*np.linalg.norm(b))
 
-def _strans(q_int, q_edu, X):
+def _strans(q_int, q_edu, q_ski, w, X):
     res = np.zeros(len(X))
     for i in range(len(X)):
         res[i] = cos_sim(q_int, X[i])
+    weight = (np.exp(w)-1)/(np.exp(5)-1)
     if q_edu is not None:
         for i in range(len(X)):
-            res[i] += cos_sim(q_edu, X[i])
+            res[i] += weight*cos_sim(q_edu, X[i])
+    if q_ski is not None:
+        for i in range(len(X)):
+            res[i] += weight*cos_sim(q_ski, X[i])
     return res
 
-def get_strans(txt_int, txt_edu=None):
+def get_strans(txt_int, txt_edu=None, txt_ski=None, weighting=5):
     qemb_int = model_strans.encode(txt_int)
     if txt_edu is not None:
         qemb_edu = model_strans.encode(txt_edu)
     else:
         qemb_edu = None
+    if txt_ski is not None:
+        qemb_ski = model_strans.encode(txt_ski)
+    else:
+        qemb_ski = None
 
-    return [_strans(qemb_int, qemb_edu, Xemb1),
-            _strans(qemb_int, qemb_edu, Xemb2),
-            _strans(qemb_int, qemb_edu, Xemb3),
-            _strans(qemb_int, qemb_edu, Xemb4),
-            _strans(qemb_int, qemb_edu, Xemb5),
-            _strans(qemb_int, qemb_edu, Xemb6),
-            _strans(qemb_int, qemb_edu, Xemb7)]
+    return [_strans(qemb_int, qemb_edu, qemb_ski, weighting, Xemb1),
+            _strans(qemb_int, qemb_edu, qemb_ski, weighting, Xemb2),
+            _strans(qemb_int, qemb_edu, qemb_ski, weighting, Xemb3),
+            _strans(qemb_int, qemb_edu, qemb_ski, weighting, Xemb4),
+            _strans(qemb_int, qemb_edu, qemb_ski, weighting, Xemb5),
+            _strans(qemb_int, qemb_edu, qemb_ski, weighting, Xemb6),
+            _strans(qemb_int, qemb_edu, qemb_ski, weighting, Xemb7)]
 
 def _get_result(res, educ_level, fields, attributes, restrictions, riasec):
     if res is not None:
@@ -295,6 +316,9 @@ def get_results(res_tfidf, res_fasttext, res_strans,
 # ----------------------------------------------------------------------
 
 class MyForm(FlaskForm):
+
+    weighting = IntegerRangeField('Kiinnostus vs. osaaminen:', default=5)
+
     name = StringField('Kiinnostus:', validators=[DataRequired()])
 
     educ = RadioField('Koulutus:',
@@ -315,6 +339,8 @@ class MyForm(FlaskForm):
     t_yolist.extend([(x['id'], xi) for xi, x in df6.sample(20).iterrows()])
     t_yo = SelectField(u'Yliopistotutkinto:',
                        choices=t_yolist, default=-1)
+
+    skills = StringField('Muu osaaminen:', validators=[Optional()])
 
     afielist = [(-1,"-")]
     afielist.extend([(xi, x) for xi, x in enumerate(avo_fields)])
@@ -372,14 +398,18 @@ def parse_post():
                          int(form.tamk.data), int(form.t_yo.data))
     txt_edu_lem = lemmatize(txt_edu)
 
-    res = get_results(get_tfidf(txt_lem, txt_edu_lem) if cfg['do_tfidf'] else None,
-                      get_fasttext(txt_lem, txt_edu_lem) if cfg['do_ft'] else None,
-                      get_strans(txt, txt_lem) if cfg['do_strans'] else None,
+    txt_ski = form.skills.data
+    txt_ski_lem = lemmatize(txt_ski)
+
+    res = get_results(get_tfidf(txt_lem, txt_edu_lem, txt_ski_lem, form.weighting.data) if cfg['do_tfidf'] else None,
+                      get_fasttext(txt_lem, txt_edu_lem, txt_ski_lem, form.weighting.data) if cfg['do_ft'] else None,
+                      get_strans(txt, txt_lem, txt_ski_lem, form.weighting.data) if cfg['do_strans'] else None,
                       form.educ.data, form.afie.data, form.aatt.data,
                       form.ares.data, (form.aria.data, form.ari2.data))
 
     return flask.Response(flask.render_template("index2.html",
                                                 lemmatized=txt_lem,
+                                                lemmatized_skills=txt_ski_lem,
                                                 results1=res['tfidf'],
                                                 results2=res['fasttext'],
                                                 results3=res['strans'],

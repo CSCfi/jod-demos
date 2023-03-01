@@ -22,10 +22,19 @@
       <div class="container-fluid">
         <br/>
         <div class="row">
-          <div class="col-md-1">
+          <div class="col-md-2">
+            {{ form.weighting.label }}
+          </div>
+          <div class="col-md-4">
+            {{ form.weighting(min=0, max=10) }}
+          </div>
+        </div>
+        <br/>
+        <div class="row">
+          <div class="col-md-2">
             {{ form.name.label }}
           </div>
-          <div class="col-md-11">
+          <div class="col-md-10">
             {{ form.name(style="width:100%;") }}
           </div>
         </div>
@@ -49,6 +58,15 @@
             {{ form.tamk(style="width:70%;") }}
             <br/>
             {{ form.t_yo(style="width:70%;") }}
+          </div>
+        </div>
+        <br/>
+        <div class="row">
+          <div class="col-md-2">
+            {{ form.skills.label }}
+          </div>
+          <div class="col-md-10">
+            {{ form.skills(style="width:100%;") }}
           </div>
         </div>
         <br/>
@@ -98,9 +116,11 @@
 {% if debug %}
 <br/><br/>
 <small>
-Lemmatisoitu kiinnostus: {{lemmatized}}<br/>
+Painotus: {{ form.weighting.data }}<br/>
+Kiinnostus: {{ form.name.data }}, lemmatisoitu: {{lemmatized}}<br/>
 Koulutus: {{ form.educ.data }}<br/>
 Tutkinnot: {{ form.tamm.data }} {{ form.tamk.data }} {{ form.t_yo.data }}<br/>
+Osaaminen: {{ form.skills.data }}, lemmatisoitu: {{lemmatized_skills}}<br/>
 Ammatit: {{ form.afie.data }} {{ form.aatt.data }} {{ form.ares.data }} ( {{ form.aria.data }} {{ form.ari2.data }} )
 </small>
 {% endif %}
