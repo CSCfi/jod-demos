@@ -126,6 +126,15 @@ df7_riasec = df7['avo-code-int'].apply(pd.Series)
 print('Testing lemmatizer:', cfg['lemmatizer'])
 test_lemmatizer()
 
+if cfg['do_tfidf'] and cfg['do_ft'] and cfg['do_strans']:
+    final_algorithm = 'combined'
+elif cfg['do_strans']:
+    final_algorithm = 'strans'
+elif cfg['do_ft']:
+    final_algorithm = 'fasttext'
+else:
+    final_algorithm = 'tfidf'
+
 print('All done')
 
 # ----------------------------------------------------------------------
@@ -381,12 +390,12 @@ def parse_get():
                       get_strans(txt) if cfg['do_strans'] else None)
 
     form = MyForm(meta={'csrf': False})
-    return flask.Response(flask.render_template("index2.html",
+    return flask.Response(flask.render_template("index2b.html",
                                                 lemmatized=txt_lem,
                                                 results1=res['tfidf'],
                                                 results2=res['fasttext'],
                                                 results3=res['strans'],
-                                                results4=res['combined'],
+                                                results4=res[final_algorithm],
                                                 form=form, debug=debug),
                           mimetype="text/html; charset=utf-8")
 
@@ -411,13 +420,13 @@ def parse_post():
                       form.educ.data, form.afie.data, form.aatt.data,
                       form.ares.data, (form.aria.data, form.ari2.data))
 
-    return flask.Response(flask.render_template("index2.html",
+    return flask.Response(flask.render_template("index2b.html",
                                                 lemmatized=txt_lem,
                                                 lemmatized_skills=txt_ski_lem,
                                                 results1=res['tfidf'],
                                                 results2=res['fasttext'],
                                                 results3=res['strans'],
-                                                results4=res['combined'],
+                                                results4=res[final_algorithm],
                                                 form=form, debug=debug),
                           mimetype="text/html; charset=utf-8")
 
