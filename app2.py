@@ -319,15 +319,17 @@ class MyForm(FlaskForm):
 
     weighting = IntegerRangeField('Kiinnostus vs. osaaminen:', default=5)
 
-    name = StringField('Kiinnostus:', validators=[DataRequired()])
+    name = StringField('Kiinnostukset ja tavoitteet:',
+                       render_kw={'placeholder': 'Kirjoita tähän tavoitteistasi tai mitkä alat tai aihepiirit sinua kiinnostavat'},
+                       validators=[DataRequired()])
 
-    educ = RadioField('Koulutus:',
+    educ = RadioField('Pohjakoulutus:',
                       choices=[('lukio','lukio'),('amm','ammattikoulu'),
-                               ('amk','AMK'),('yo','yliopisto')])
+                               ('amk','AMK'),('yo','yliopisto')], default='lukio')
 
     tammlist = [(-1,"-")]
     tammlist.extend([(x['id'], x['nimi-fi']) for _, x in df2.sample(20).iterrows()])
-    tamm = SelectField(u'Ammattikoulututkinto:',
+    tamm = SelectField(u'ammattikoulututkinto:',
                        choices=tammlist, default=-1)
 
     tamklist = [(-1,"-")]
@@ -337,10 +339,12 @@ class MyForm(FlaskForm):
 
     t_yolist = [(-1,"-")]
     t_yolist.extend([(x['id'], xi) for xi, x in df6.sample(20).iterrows()])
-    t_yo = SelectField(u'Yliopistotutkinto:',
+    t_yo = SelectField(u'yliopistotutkinto:',
                        choices=t_yolist, default=-1)
 
-    skills = StringField('Muu osaaminen:', validators=[Optional()])
+    skills = StringField('Muu osaaminen:',
+                         render_kw={'placeholder': 'Tähän voit syöttää tietoja muusta osaamisestasi ylläolevan koulutuksen lisäksi'},
+                         validators=[Optional()])
 
     afielist = [(-1,"-")]
     afielist.extend([(xi, x) for xi, x in enumerate(avo_fields)])

@@ -25,8 +25,14 @@
           <div class="col-md-2">
             {{ form.weighting.label }}
           </div>
+          <div class="col-md-1">
+            <p class="text-right">kiinnostus</p>
+          </div>
           <div class="col-md-4">
             {{ form.weighting(min=0, max=10) }}
+          </div>
+          <div class="col-md-1">
+            osaaminen
           </div>
         </div>
         <br/>
@@ -41,23 +47,36 @@
         <br/>
         <div class="row">
           <div class="col-md-2">
-            {{ form.educ.label }} {{ form.educ }}
+            {{ form.educ.label }}
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-1">
+            &nbsp;
           </div>
           <div class="col-md-2">
-            <br/> <br/>
+            <b>Koulutustaso:</b>
+            <br/><br/>
+            {% for subfield in form.educ %}
+            {{ subfield }} {{ subfield.label }}<br/>
+            {% endfor %}
+          </div>
+          <div class="col-md-2">
+            <b>Suoritettu tutkinto:</b>
+            <br/><br/><br/>
             {{ form.tamm.label }}
             <br/>
             {{ form.tamk.label }}
             <br/>
             {{ form.t_yo.label }}
           </div>
-          <div class="col-md-8">
-            <br/> <br/>
-            {{ form.tamm(style="width:70%;") }}
+          <div class="col-md-6">
+            <br/><br/><br/>
+            {{ form.tamm(style="width:100%;") }}
             <br/>
-            {{ form.tamk(style="width:70%;") }}
+            {{ form.tamk(style="width:100%;") }}
             <br/>
-            {{ form.t_yo(style="width:70%;") }}
+            {{ form.t_yo(style="width:100%;") }}
           </div>
         </div>
         <br/>
@@ -77,37 +96,44 @@
         </div>
         <br/>
         <div class="row">
-          <div class="col-md-3">
-            <ul><li>{{ form.afie.label }}</li></ul>
-            &nbsp; &nbsp; &nbsp; Minua kiinnostaa erityisesti seuraavat alat:
-            <br/><br/>
-            &nbsp; &nbsp; &nbsp; {{ form.afie(style="width:90%;") }}
+          <div class="col-md-1">
+            &nbsp;
           </div>
           <div class="col-md-3">
-            <ul><li>{{ form.aatt.label }}</li></ul>
-            &nbsp; &nbsp; &nbsp; Haluaisin että työhöni sisältyisi seuraavia asioita:
-            <br/><br/>
-            &nbsp; &nbsp; &nbsp; {{ form.aatt(style="width:90%;") }}
-          </div>
-          <div class="col-md-3">
-            <ul><li>{{ form.ares.label }}</li></ul>
-            &nbsp; &nbsp; &nbsp; En halua ammatteja, joissa on seuraavat rajoitukset:
-            <br/><br/>
-            &nbsp; &nbsp; &nbsp; {{ form.ares(style="width:90%;") }}
-          </div>
-          <div class="col-md-3">
-            <ul><li>{{ form.aria.label }}</li></ul>
-            &nbsp; &nbsp; &nbsp; Olen tehnyt RIASEC-testin ja kiinnostukseni ovat:
-            <br/><br/>
-            &nbsp; &nbsp; &nbsp; 1. {{ form.aria(style="width:70%;") }}
+            <b>{{ form.afie.label }}</b>
             <br/>
-            &nbsp; &nbsp; &nbsp; 2. {{ form.ari2(style="width:70%;") }}
+            Minua kiinnostavat erityisesti seuraavat ammattialat:
+            <br/><br/>
+            {{ form.afie(style="width:100%;") }}
+          </div>
+          <div class="col-md-3">
+            <b>{{ form.aatt.label }}</b>
+            <br/>
+            Haluaisin, että työhöni sisältyisi seuraavia asioita:
+            <br/><br/>
+            {{ form.aatt(style="width:100%;") }}
+          </div>
+          <div class="col-md-3">
+            <b>{{ form.ares.label }}</b>
+            <br/>
+            En halua ammatteja, joissa on seuraavat rajoitukset:
+            <br/><br/>
+            {{ form.ares(style="width:100%;") }}
+          </div>
+          <div class="col-md-2">
+            <b>{{ form.aria.label }}</b>
+            <br/>
+            Olen tehnyt RIASEC-testin ja kiinnostukseni ovat:
+            <br/><br/>
+            1. {{ form.aria(style="width:90%;") }}
+            <br/>
+            2. {{ form.ari2(style="width:90%;") }}
           </div>
         </div>
         <br/>
         <div class="row">
           <div class="col-md-12">
-            <input type="submit" value="Hae koulutuksia ja ammatteja">
+            <input type="submit" value="Ehdota koulutuksia ja ammatteja">
           </div>
         </div>
       </div>
