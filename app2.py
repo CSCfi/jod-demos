@@ -390,7 +390,7 @@ def parse_get():
                       get_strans(txt) if cfg['do_strans'] else None)
 
     form = MyForm(meta={'csrf': False})
-    return flask.Response(flask.render_template("index2b.html",
+    return flask.Response(flask.render_template(cfg['html_template'],
                                                 lemmatized=txt_lem,
                                                 results1=res['tfidf'],
                                                 results2=res['fasttext'],
@@ -411,16 +411,20 @@ def parse_post():
                          int(form.tamk.data), int(form.t_yo.data))
     txt_edu_lem = lemmatize(txt_edu)
 
-    txt_ski = form.skills.data
+    txt_ski = form.skills.data if len(form.skills.data)>3 else None
     txt_ski_lem = lemmatize(txt_ski)
+
+    if debug:
+        print('txt_edu:', txt_edu, type(txt_edu))
+        print('txt_ski:', txt_ski, type(txt_ski))
 
     res = get_results(get_tfidf(txt_lem, txt_edu_lem, txt_ski_lem, form.weighting.data) if cfg['do_tfidf'] else None,
                       get_fasttext(txt_lem, txt_edu_lem, txt_ski_lem, form.weighting.data) if cfg['do_ft'] else None,
-                      get_strans(txt, txt_lem, txt_ski_lem, form.weighting.data) if cfg['do_strans'] else None,
+                      get_strans(txt, txt_edu, txt_ski, form.weighting.data) if cfg['do_strans'] else None,
                       form.educ.data, form.afie.data, form.aatt.data,
                       form.ares.data, (form.aria.data, form.ari2.data))
 
-    return flask.Response(flask.render_template("index2b.html",
+    return flask.Response(flask.render_template(cfg['html_template'],
                                                 lemmatized=txt_lem,
                                                 lemmatized_skills=txt_ski_lem,
                                                 results1=res['tfidf'],

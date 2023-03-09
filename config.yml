@@ -10,6 +10,8 @@ do_tfidf: True
 do_ft: True
 do_strans: True
 
+html_template: "index2b.html"
+
 dataset1: "ammattitieto.ammatit-2022-10-05"
 embfile1: "ammattitieto.ammatit-2022-10-05-TurkuNLP-sbert-cased-finnish-paraphrase-combinedText.npy"
 dataset2: "eperusteet-data-2022-11-07"
