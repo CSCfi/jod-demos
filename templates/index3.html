@@ -1,0 +1,247 @@
+{% extends "bootstrap/base.html" %}
+{% block title %}JOD-testi{% endblock %}
+
+{% block navbar %}
+<div class="navbar navbar-fixed-top">
+  <!-- ... -->
+</div>
+{% endblock %}
+
+{% block styles %}
+{{super()}}
+<link rel="stylesheet"
+      href="{{url_for('.static', filename='mystyle.css')}}">
+{% endblock %}
+
+{% block content %}
+<h1>JOD-kohtaantokokeilu 3: palaute</h1>
+
+<form method="POST" action="/">
+  {{ form.csrf_token }}
+  <div class="body-content">
+    <div class="container-fluid">
+      <br/>
+      <div class="row">
+        <div class="col-md-2">
+          {{ form.weighting.label }}
+        </div>
+        <div class="col-md-1">
+          <p class="text-right">kiinnostus</p>
+        </div>
+        <div class="col-md-4">
+          {{ form.weighting(min=0, max=10) }}
+        </div>
+        <div class="col-md-1">
+          osaaminen
+        </div>
+      </div>
+      <br/>
+      <div class="row">
+        <div class="col-md-2">
+          {{ form.name.label }}
+        </div>
+        <div class="col-md-10">
+          {{ form.name(style="width:100%;") }}
+        </div>
+      </div>
+      <br/>
+      <div class="row">
+        <div class="col-md-2">
+          {{ form.educ.label }}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-1">
+          &nbsp;
+        </div>
+        <div class="col-md-2">
+          <b>Koulutustaso:</b>
+          <br/><br/>
+          {% for subfield in form.educ %}
+          {{ subfield }} {{ subfield.label }}<br/>
+          {% endfor %}
+        </div>
+        <div class="col-md-2">
+          <b>Suoritettu tutkinto:</b>
+          <br/><br/><br/>
+          {{ form.tamm.label }}
+          <br/>
+          {{ form.tamk.label }}
+          <br/>
+          {{ form.t_yo.label }}
+        </div>
+        <div class="col-md-6">
+          <br/><br/>
+          Huom! Tässä kokeilussa on valittavana vain pieni osa
+          kaikista olemassaolevista tutkinnoista.
+          <br/>
+          {{ form.tamm(style="width:100%;") }}
+          <br/>
+          {{ form.tamk(style="width:100%;") }}
+          <br/>
+          {{ form.t_yo(style="width:100%;") }}
+        </div>
+      </div>
+      <br/>
+      <div class="row">
+        <div class="col-md-2">
+          {{ form.skills.label }}
+        </div>
+        <div class="col-md-10">
+          {{ form.skills(style="width:100%;") }}
+        </div>
+      </div>
+      <br/>
+      <div class="row">
+        <div class="col-md-12">
+          <b>Ammatit:</b>
+        </div>
+      </div>
+      <br/>
+      <div class="row">
+        <div class="col-md-1">
+          &nbsp;
+        </div>
+        <div class="col-md-3">
+          <b>{{ form.afie.label }}</b>
+          <br/>
+          Minua kiinnostavat erityisesti seuraavat ammattialat:
+          <br/><br/>
+          {{ form.afie(style="width:100%;") }}
+        </div>
+        <div class="col-md-3">
+          <b>{{ form.aatt.label }}</b>
+          <br/>
+          Haluaisin, että työhöni sisältyisi seuraavia asioita:
+          <br/><br/>
+          {{ form.aatt(style="width:100%;") }}
+        </div>
+        <div class="col-md-3">
+          <b>{{ form.ares.label }}</b>
+          <br/>
+          En halua ammatteja, joissa on seuraavat rajoitukset:
+          <br/><br/>
+          {{ form.ares(style="width:100%;") }}
+        </div>
+        <div class="col-md-2">
+          <b>{{ form.aria.label }}</b>
+          <br/>
+          Olen tehnyt RIASEC-testin ja kiinnostukseni ovat:
+          <br/><br/>
+          1. {{ form.aria(style="width:90%;") }}
+          <br/>
+          2. {{ form.ari2(style="width:90%;") }}
+        </div>
+      </div>
+      <br/>
+      <div class="row">
+        <div class="col-md-12">
+          {{ form.suggest_button }}
+          &nbsp;
+          {{ form.restart_button }}  
+        </div>
+      </div>
+    </div>
+    
+    {% if debug %}
+    <br/><br/>
+    <small>
+      Painotus: {{ form.weighting.data }}<br/>
+      Kiinnostus: {{ form.name.data }}, lemmatisoitu: {{lemmatized}}<br/>
+      Koulutus: {{ form.educ.data }}<br/>
+      Tutkinnot: {{ form.tamm.data }} {{ form.tamk.data }} {{ form.t_yo.data }}<br/>
+      Osaaminen: {{ form.skills.data }}, lemmatisoitu: {{lemmatized_skills}}<br/>
+      Ammatit: {{ form.afie.data }} {{ form.aatt.data }} {{ form.ares.data }} ( {{ form.aria.data }} {{ form.ari2.data }} )
+    </small>
+    {% endif %}
+    
+    <div class="body-content">
+      <div class="container-fluid">
+        <br/>
+        <div class="row">
+          <div class="col-md-6">
+            <h2>Koulutukset</h2>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th class="idxcol">#</th>
+                  <th class="rescol">&nbsp;</th>
+                  <th class="idxcol">&nbsp;</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">1</th>
+                  <td>{{results4['education'][0]}}</td>
+                  <td>{{ form.edu.itemlist.it_0 }} {{ form.edu.thumbs.up.th_0 }} &#128077;<br/>{{ form.edu.thumbs.down.th_0 }} &#128078;</td>
+                </tr>
+                <tr>
+                  <th scope="row">2</th>
+                  <td>{{results4['education'][1]}}</td>
+                  <td>{{ form.edu.itemlist.it_1 }} {{ form.edu.thumbs.up.th_1 }} &#128077;<br/>{{ form.edu.thumbs.down.th_1 }} &#128078;</td>
+                </tr>
+                <tr>
+                  <th scope="row">3</th>
+                  <td>{{results4['education'][2]}}</td>
+                  <td>{{ form.edu.itemlist.it_2 }} {{ form.edu.thumbs.up.th_2 }} &#128077;<br/>{{ form.edu.thumbs.down.th_2 }} &#128078;</td>
+                </tr>
+                <tr>
+                  <th scope="row">4</th>
+                  <td>{{results4['education'][3]}}</td>
+                  <td>{{ form.edu.itemlist.it_3 }} {{ form.edu.thumbs.up.th_3 }} &#128077;<br/>{{ form.edu.thumbs.down.th_3 }} &#128078;</td>
+                </tr>
+                <tr>
+                  <th scope="row">5</th>
+                  <td>{{results4['education'][4]}}</td>
+                  <td>{{ form.edu.itemlist.it_4 }} {{ form.edu.thumbs.up.th_4 }} &#128077;<br/>{{ form.edu.thumbs.down.th_4 }} &#128078;</td>
+                </tr>
+              </tbody>
+            </table>        
+          </div>
+          <div class="col-md-6">
+            <h2>Ammatit</h2>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th class="idxcol">#</th>
+                  <th class="rescol">&nbsp;</th>
+                  <th class="idxcol">&nbsp;</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">1</th>
+                  <td>{{results4['occupations'][0]}}</td>
+                  <td>{{ form.occ.itemlist.it_0 }} {{ form.occ.thumbs.up.th_0 }} &#128077;<br/>{{ form.occ.thumbs.down.th_0 }} &#128078;</td>
+                </tr>
+                <tr>
+                  <th scope="row">2</th>
+                  <td>{{results4['occupations'][1]}}</td>
+                  <td>{{ form.occ.itemlist.it_1 }} {{ form.occ.thumbs.up.th_1 }} &#128077;<br/>{{ form.occ.thumbs.down.th_1 }} &#128078;</td>
+                </tr>
+                <tr>
+                  <th scope="row">3</th>
+                  <td>{{results4['occupations'][2]}}</td>
+                  <td>{{ form.occ.itemlist.it_2 }} {{ form.occ.thumbs.up.th_2 }} &#128077;<br/>{{ form.occ.thumbs.down.th_2 }} &#128078;</td>
+                </tr>
+                <tr>
+                  <th scope="row">4</th>
+                  <td>{{results4['occupations'][3]}}</td>
+                  <td>{{ form.occ.itemlist.it_3 }} {{ form.occ.thumbs.up.th_3 }} &#128077;<br/>{{ form.occ.thumbs.down.th_3 }} &#128078;</td>
+                </tr>
+                <tr>
+                  <th scope="row">5</th>
+                  <td>{{results4['occupations'][4]}}</td>
+                  <td>{{ form.occ.itemlist.it_4 }} {{ form.occ.thumbs.up.th_4 }} &#128077;<br/>{{ form.occ.thumbs.down.th_4 }} &#128078;</td>
+                </tr>
+              </tbody>
+            </table>
+            {{ form.occ_pos }} {{ form.occ_neg }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+{% endblock %}
