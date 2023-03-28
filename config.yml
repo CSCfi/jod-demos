@@ -6,8 +6,8 @@ lemmatizer: "voikko"
 debug: False
 
 do_tfidf: True
-do_ft: False
-do_strans: False
+do_ft: True
+do_strans: True
 
 html_template: "index2b.html"
 app3_html_template: "index3.html"
