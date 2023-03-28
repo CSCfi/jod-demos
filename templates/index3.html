@@ -47,6 +47,15 @@
       <br/>
       <div class="row">
         <div class="col-md-2">
+          {{ form.goal.label }}
+        </div>
+        <div class="col-md-10">
+          {{ form.goal(style="width:100%;") }}
+        </div>
+      </div>
+      <br/>
+      <div class="row">
+        <div class="col-md-2">
           {{ form.educ.label }}
         </div>
       </div>
@@ -147,7 +156,7 @@
     <br/><br/>
     <small>
       Painotus: {{ form.weighting.data }}<br/>
-      Kiinnostus: {{ form.name.data }}, lemmatisoitu: {{lemmatized}}<br/>
+      Kiinnostus: {{ form.name.data }}, tavoittet: {{ form.goal.data }}, lemmatisoitu: {{lemmatized}}<br/>
       Koulutus: {{ form.educ.data }}<br/>
       Tutkinnot: {{ form.tamm.data }} {{ form.tamk.data }} {{ form.t_yo.data }}<br/>
       Osaaminen: {{ form.skills.data }}, lemmatisoitu: {{lemmatized_skills}}<br/>

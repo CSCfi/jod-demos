@@ -172,39 +172,24 @@ def _tfidf(txt_int, txt_edu, txt_ski, w, vect, X):
         res += weight*cosine_similarity(X, query_vec_ski).squeeze()
     return res
 
+def _tfidf_fb(fb_pos, fb_neg, suffix, df, X):
+    res_fb = np.zeros(len(df))
+    for fo in fb_pos:
+        if suffix is None or suffix in fo:
+            res_fb += cosine_similarity(X, X[df.loc[fo]['row_number']]).squeeze()
+    for fo in fb_neg:
+        if suffix is None or suffix in fo:
+            res_fb -= cosine_similarity(X, X[df.loc[fo]['row_number']]).squeeze()
+    return res_fb
+
 def get_tfidf(txt_int, txt_edu=None, txt_ski=None, weighting=5,
               fb_edu_pos=[], fb_edu_neg=[], fb_occ_pos=[], fb_occ_neg=[]):
 
-    res_fb_df2 = np.zeros(len(df2))
-    for fo in fb_edu_pos:
-        if '-eperusteet' in fo:
-            res_fb_df2 += cosine_similarity(X_tfidf2, X_tfidf2[df2.loc[fo]['row_number']]).squeeze()
-    for fo in fb_edu_neg:
-        if '-eperusteet' in fo:
-            res_fb_df2 -= cosine_similarity(X_tfidf2, X_tfidf2[df2.loc[fo]['row_number']]).squeeze()
+    res_fb_df2 = _tfidf_fb(fb_edu_pos, fb_edu_neg, '-eperusteet', df2, X_tfidf2)
+    res_fb_df5 = _tfidf_fb(fb_edu_pos, fb_edu_neg, '-konfo-amk', df5, X_tfidf5)
+    res_fb_df6 = _tfidf_fb(fb_edu_pos, fb_edu_neg, '-konfo-yo', df6, X_tfidf6)
+    res_fb_df7 = _tfidf_fb(fb_occ_pos, fb_occ_neg, None, df7, X_tfidf7)
 
-    res_fb_df5 = np.zeros(len(df5))
-    for fo in fb_edu_pos:
-        if '-konfo-amk' in fo:
-            res_fb_df5 += cosine_similarity(X_tfidf5, X_tfidf5[df5.loc[fo]['row_number']]).squeeze()
-    for fo in fb_edu_neg:
-        if '-konfo-amk' in fo:
-            res_fb_df5 -= cosine_similarity(X_tfidf5, X_tfidf5[df5.loc[fo]['row_number']]).squeeze()
-
-    res_fb_df6 = np.zeros(len(df6))
-    for fo in fb_edu_pos:
-        if '-konfo-yo' in fo:
-            res_fb_df6 += cosine_similarity(X_tfidf6, X_tfidf6[df6.loc[fo]['row_number']]).squeeze()
-    for fo in fb_edu_neg:
-        if '-konfo-yo' in fo:
-            res_fb_df6 -= cosine_similarity(X_tfidf6, X_tfidf6[df6.loc[fo]['row_number']]).squeeze()
-
-    res_fb_df7 = np.zeros(len(df7))
-    for fo in fb_occ_pos:
-        res_fb_df7 += cosine_similarity(X_tfidf7, X_tfidf7[df7.loc[fo]['row_number']]).squeeze()
-    for fo in fb_occ_neg:
-        res_fb_df7 -= cosine_similarity(X_tfidf7, X_tfidf7[df7.loc[fo]['row_number']]).squeeze()
-        
     return [_tfidf(txt_int, txt_edu, txt_ski, weighting, vectorizer1, X_tfidf1),
             _tfidf(txt_int, txt_edu, txt_ski, weighting, vectorizer2, X_tfidf2) + res_fb_df2,
             _tfidf(txt_int, txt_edu, txt_ski, weighting, vectorizer3, X_tfidf3),
@@ -222,7 +207,24 @@ def _fasttext(q_int, q_edu, q_ski, w, X):
         res += weight*cosine_similarity(X, q_ski).squeeze()
     return res
 
-def get_fasttext(txt_int, txt_edu=None, txt_ski=None, weighting=5):
+def _fasttext_fb(fb_pos, fb_neg, suffix, df, X):
+    res_fb = np.zeros(len(df))
+    for fo in fb_pos:
+        if suffix is None or suffix in fo:
+            res_fb += cosine_similarity(X, X[df.loc[fo]['row_number']].reshape(1, -1)).squeeze()
+    for fo in fb_neg:
+        if suffix is None or suffix in fo:
+            res_fb -= cosine_similarity(X, X[df.loc[fo]['row_number']].reshape(1, -1)).squeeze()
+    return res_fb
+
+def get_fasttext(txt_int, txt_edu=None, txt_ski=None, weighting=5,
+              fb_edu_pos=[], fb_edu_neg=[], fb_occ_pos=[], fb_occ_neg=[]):
+
+    res_fb_df2 = _fasttext_fb(fb_edu_pos, fb_edu_neg, '-eperusteet', df2, X_ft2)
+    res_fb_df5 = _fasttext_fb(fb_edu_pos, fb_edu_neg, '-konfo-amk', df5, X_ft5)
+    res_fb_df6 = _fasttext_fb(fb_edu_pos, fb_edu_neg, '-konfo-yo', df6, X_ft6)
+    res_fb_df7 = _fasttext_fb(fb_occ_pos, fb_occ_neg, None, df7, X_ft7)
+
     query_ft_int = model_ft.get_sentence_vector(txt_int)
     query_ft_int = query_ft_int.reshape(1, -1)
     if txt_edu is not None:
@@ -237,12 +239,12 @@ def get_fasttext(txt_int, txt_edu=None, txt_ski=None, weighting=5):
         query_ft_ski = None
 
     return [_fasttext(query_ft_int, query_ft_edu, query_ft_ski, weighting, X_ft1),
-            _fasttext(query_ft_int, query_ft_edu, query_ft_ski, weighting, X_ft2),
+            _fasttext(query_ft_int, query_ft_edu, query_ft_ski, weighting, X_ft2) + res_fb_df2,
             _fasttext(query_ft_int, query_ft_edu, query_ft_ski, weighting, X_ft3),
             _fasttext(query_ft_int, query_ft_edu, query_ft_ski, weighting, X_ft4),
-            _fasttext(query_ft_int, query_ft_edu, query_ft_ski, weighting, X_ft5),
-            _fasttext(query_ft_int, query_ft_edu, query_ft_ski, weighting, X_ft6),
-            _fasttext(query_ft_int, query_ft_edu, query_ft_ski, weighting, X_ft7)]
+            _fasttext(query_ft_int, query_ft_edu, query_ft_ski, weighting, X_ft5) + res_fb_df5,
+            _fasttext(query_ft_int, query_ft_edu, query_ft_ski, weighting, X_ft6) + res_fb_df6,
+            _fasttext(query_ft_int, query_ft_edu, query_ft_ski, weighting, X_ft7) + res_fb_df7]
 
 def cos_sim(a, b):
     return np.dot(a, b)/(np.linalg.norm(a)*np.linalg.norm(b))
@@ -260,7 +262,26 @@ def _strans(q_int, q_edu, q_ski, w, X):
             res[i] += weight*cos_sim(q_ski, X[i])
     return res
 
-def get_strans(txt_int, txt_edu=None, txt_ski=None, weighting=5):
+def _strans_fb(fb_pos, fb_neg, suffix, df, X):
+    res_fb = np.zeros(len(df))
+    for fo in fb_pos:
+        if suffix is None or suffix in fo:
+            for i in range(len(X)):
+                res_fb[i] += cos_sim(X[df.loc[fo]['row_number']], X[i])
+    for fo in fb_neg:
+        if suffix is None or suffix in fo:
+            for i in range(len(X)):
+                res_fb[i] -= cos_sim(X[df.loc[fo]['row_number']], X[i])
+    return res_fb
+
+def get_strans(txt_int, txt_edu=None, txt_ski=None, weighting=5,
+               fb_edu_pos=[], fb_edu_neg=[], fb_occ_pos=[], fb_occ_neg=[]):
+
+    res_fb_df2 = _strans_fb(fb_edu_pos, fb_edu_neg, '-eperusteet', df2, Xemb2)
+    res_fb_df5 = _strans_fb(fb_edu_pos, fb_edu_neg, '-konfo-amk', df5, Xemb5)
+    res_fb_df6 = _strans_fb(fb_edu_pos, fb_edu_neg, '-konfo-yo', df6, Xemb6)
+    res_fb_df7 = _strans_fb(fb_occ_pos, fb_occ_neg, None, df7, Xemb7)
+
     qemb_int = model_strans.encode(txt_int)
     if txt_edu is not None:
         qemb_edu = model_strans.encode(txt_edu)
@@ -272,12 +293,12 @@ def get_strans(txt_int, txt_edu=None, txt_ski=None, weighting=5):
         qemb_ski = None
 
     return [_strans(qemb_int, qemb_edu, qemb_ski, weighting, Xemb1),
-            _strans(qemb_int, qemb_edu, qemb_ski, weighting, Xemb2),
+            _strans(qemb_int, qemb_edu, qemb_ski, weighting, Xemb2) + res_fb_df2,
             _strans(qemb_int, qemb_edu, qemb_ski, weighting, Xemb3),
             _strans(qemb_int, qemb_edu, qemb_ski, weighting, Xemb4),
-            _strans(qemb_int, qemb_edu, qemb_ski, weighting, Xemb5),
-            _strans(qemb_int, qemb_edu, qemb_ski, weighting, Xemb6),
-            _strans(qemb_int, qemb_edu, qemb_ski, weighting, Xemb7)]
+            _strans(qemb_int, qemb_edu, qemb_ski, weighting, Xemb5) + res_fb_df5,
+            _strans(qemb_int, qemb_edu, qemb_ski, weighting, Xemb6) + res_fb_df6,
+            _strans(qemb_int, qemb_edu, qemb_ski, weighting, Xemb7) + res_fb_df7]
 
 def _get_result(res, educ_level, fields, attributes, restrictions, riasec):
     if res is not None:
@@ -413,9 +434,15 @@ class MyForm(FlaskForm):
 
     weighting = IntegerRangeField('Kiinnostus vs. osaaminen:', default=5)
 
-    name = StringField('Kiinnostukset ja tavoitteet:',
-                       render_kw={'placeholder': 'Kirjoita tähän tavoitteistasi tai mitkä alat tai aihepiirit sinua kiinnostavat'},
+    name = StringField('Kiinnostuksen kohteet:',
+                       render_kw={'placeholder':
+                                  'Kirjoita tähän mitkä alat tai aihepiirit sinua kiinnostavat'},
                        validators=[DataRequired()])
+
+    goal = StringField('Tavoitteet:',
+                       render_kw={'placeholder':
+                                  'Tähän voit kirjoittaa tavoitteistasi'},
+                       validators=[Optional()])
 
     educ = RadioField('Pohjakoulutus:',
                       choices=[('lukio','lukio'),('amm','ammattikoulu'),
@@ -437,7 +464,8 @@ class MyForm(FlaskForm):
                        choices=t_yolist, default=-1)
 
     skills = StringField('Muu osaaminen:',
-                         render_kw={'placeholder': 'Tähän voit syöttää tietoja muusta osaamisestasi ylläolevan koulutuksen lisäksi'},
+                         render_kw={'placeholder':
+                                    'Tähän voit syöttää tietoja muusta osaamisestasi ylläolevan koulutuksen lisäksi'},
                          validators=[Optional()])
 
     afielist = [(-1,"-")]
@@ -559,6 +587,8 @@ def parse_get():
 def parse_post():
     form = MyForm(meta={'csrf': False})
     txt = form.name.data
+    if form.goal.data is not None and len(form.goal.data)>3:
+        txt = txt + " " + form.goal.data
     if not txt:
         return """Error occurred""", 400
     txt_lem = lemmatize(txt)
@@ -593,9 +623,14 @@ def parse_post():
         print('feedback_occ_neg', feedback_occ_neg)
 
     res = get_results(get_tfidf(txt_lem, txt_edu_lem, txt_ski_lem, form.weighting.data,
-                                feedback_edu_pos, feedback_edu_neg, feedback_occ_pos, feedback_occ_neg) if cfg['do_tfidf'] else None,
-                      get_fasttext(txt_lem, txt_edu_lem, txt_ski_lem, form.weighting.data) if cfg['do_ft'] else None,
-                      get_strans(txt, txt_edu, txt_ski, form.weighting.data) if cfg['do_strans'] else None,
+                                feedback_edu_pos, feedback_edu_neg,
+                                feedback_occ_pos, feedback_occ_neg) if cfg['do_tfidf'] else None,
+                      get_fasttext(txt_lem, txt_edu_lem, txt_ski_lem, form.weighting.data,
+                                feedback_edu_pos, feedback_edu_neg,
+                                feedback_occ_pos, feedback_occ_neg) if cfg['do_ft'] else None,
+                      get_strans(txt, txt_edu, txt_ski, form.weighting.data,
+                                 feedback_edu_pos, feedback_edu_neg,
+                                 feedback_occ_pos, feedback_occ_neg) if cfg['do_strans'] else None,
                       form.educ.data, form.afie.data, form.aatt.data,
                       form.ares.data, (form.aria.data, form.ari2.data))
 
