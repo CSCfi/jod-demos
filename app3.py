@@ -397,10 +397,10 @@ def id2name(results):
             name, dataset = df6.loc[x]['nimi-fi'], "konfo-yo"
         else:
             name, dataset = "???", "???"
-        edunames.append("{} ({}) ({})".format(name, x, dataset))
+        edunames.append("{} ({})".format(name, dataset))
     results.update(education=edunames)
 
-    occnames = ["{} ({}) (avo)".format(df7.loc[x]['name'], x) for x in results['occupations']]
+    occnames = ["{} (avo)".format(df7.loc[x]['name']) for x in results['occupations']]
     results.update(occupations=occnames)
     return results
 
@@ -454,12 +454,12 @@ class MyForm(FlaskForm):
                        choices=tammlist, default=-1)
 
     tamklist = [(-1,"-")]
-    tamklist.extend([(x['id'], xi) for xi, x in df5.sample(20).iterrows()])
+    tamklist.extend([(x['id'], x['nimi-fi']) for _, x in df5.sample(20).iterrows()])
     tamk = SelectField(u'AMK-tutkinto:',
                        choices=tamklist, default=-1)
 
     t_yolist = [(-1,"-")]
-    t_yolist.extend([(x['id'], xi) for xi, x in df6.sample(20).iterrows()])
+    t_yolist.extend([(x['id'], x['nimi-fi']) for _, x in df6.sample(20).iterrows()])
     t_yo = SelectField(u'yliopistotutkinto:',
                        choices=t_yolist, default=-1)
 
