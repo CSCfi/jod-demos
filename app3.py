@@ -542,7 +542,9 @@ def process_feedback(form):
         feedback_occ_pos = set()
         feedback_occ_neg = set()
 
-    return feedback_edu_pos, feedback_edu_neg, feedback_occ_pos, feedback_occ_neg
+    return (feedback_edu_pos, feedback_edu_neg, feedback_occ_pos, feedback_occ_neg,
+            {'edu_pos': len(feedback_edu_pos), 'edu_neg': len(feedback_edu_neg),
+             'occ_pos': len(feedback_occ_pos), 'occ_neg': len(feedback_occ_neg)})
 
 # ----------------------------------------------------------------------
 
@@ -614,7 +616,8 @@ def parse_post():
         print('form.occ.pos.data:', form.occ.pos.data, type(form.occ.pos.data))
         print('form.occ.neg.data:', form.occ.neg.data, type(form.occ.neg.data))
 
-    feedback_edu_pos, feedback_edu_neg, feedback_occ_pos, feedback_occ_neg = process_feedback(form)
+    (feedback_edu_pos, feedback_edu_neg,
+     feedback_occ_pos, feedback_occ_neg, nfeedback) = process_feedback(form)
 
     if debug:
         print('feedback_edu_pos', feedback_edu_pos)
@@ -642,6 +645,7 @@ def parse_post():
     return flask.Response(flask.render_template(cfg['app3_html_template'],
                                                 lemmatized=txt_lem,
                                                 lemmatized_skills=txt_ski_lem,
+                                                nfeedback=nfeedback,
                                                 results1=res['tfidf'],
                                                 results2=res['fasttext'],
                                                 results3=res['strans'],

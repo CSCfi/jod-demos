@@ -205,7 +205,9 @@
                   <td>{{ form.edu.itemlist.it_4 }} {{ form.edu.thumbs.up.th_4 }} &#128077;<br/>{{ form.edu.thumbs.down.th_4 }} &#128078;</td>
                 </tr>
               </tbody>
-            </table>        
+            </table>
+            palaute: &#128077;: {{ nfeedback['edu_pos'] }}, &#128078;: {{ nfeedback['edu_neg'] }}
+            {{ form.edu_pos }} {{ form.edu_neg }}
           </div>
           <div class="col-md-6">
             <h2>Ammatit</h2>
@@ -245,6 +247,7 @@
                 </tr>
               </tbody>
             </table>
+            palaute: &#128077;: {{ nfeedback['occ_pos'] }}, &#128078;: {{ nfeedback['occ_neg'] }}
             {{ form.occ_pos }} {{ form.occ_neg }}
           </div>
         </div>
