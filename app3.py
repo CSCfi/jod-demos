@@ -576,8 +576,10 @@ def parse_get():
                       get_strans(txt) if cfg['do_strans'] else None)
 
     form = MyForm(meta={'csrf': False})
+    nfeedback = {'edu_pos': 0, 'edu_neg': 0, 'occ_pos': 0, 'occ_neg': 0}
     return flask.Response(flask.render_template(cfg['app3_html_template'],
                                                 lemmatized=txt_lem,
+                                                nfeedback=nfeedback,
                                                 results1=res['tfidf'],
                                                 results2=res['fasttext'],
                                                 results3=res['strans'],
