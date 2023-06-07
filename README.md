@@ -11,7 +11,7 @@ Analytics experiments for the [*Jatkuvan oppimisen digitaalinen palvelukokonaisu
 
 ## Experiments
 
-1. similarity
-2. restrictions
-3. feedback
-4. chatbot
+1. similarity: [code](./app.py), [screenshot](imgs/ex1.png) 
+2. restrictions: [code](./app2.py), [screenshot](imgs/ex2.png)
+3. feedback: [code](./app3.py), [screenshot](imgs/ex3.png)
+4. chatbot: [code](./app4.py), [screenshot](imgs/ex4.png)
