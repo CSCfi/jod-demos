@@ -1,0 +1,171 @@
+{% extends "bootstrap/base.html" %}
+{% block title %}JOD-testi{% endblock %}
+
+{% block navbar %}
+<div class="navbar navbar-fixed-top">
+  <!-- ... -->
+</div>
+{% endblock %}
+
+{% block styles %}
+{{super()}}
+<link rel="stylesheet"
+      href="{{url_for('.static', filename='mystyle.css')}}">
+{% endblock %}
+
+{% block content %}
+<h1>JOD-kohtaantokokeilu 5: painotukset</h1>
+<br/>
+
+<form method="POST" action="/">
+  {{ form.csrf_token }}
+  <div class="body-content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-2">
+          {{ form.name.label }}
+        </div>
+        <div class="col-md-10">
+          {{ form.name(style="width:100%;") }}
+        </div>
+      </div>
+      <br/>
+      <div class="row">
+        <div class="col-md-2">
+          {{ form.weighting1.label }}
+        </div>
+        <div class="col-md-4">
+          {{ form.weighting1(min=-3, max=3) }}
+        </div>
+        <div class="col-md-2">
+          {{ form.weighting2.label }}
+        </div>
+        <div class="col-md-4">
+          {{ form.weighting2(min=-3, max=3) }}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-2">
+          {{ form.weighting3.label }}
+        </div>
+        <div class="col-md-4">
+          {{ form.weighting3(min=-3, max=3) }}
+        </div>
+        <div class="col-md-2">
+          {{ form.weighting4.label }}
+        </div>
+        <div class="col-md-4">
+          {{ form.weighting4(min=-3, max=3) }}
+        </div>
+      </div>
+      <br/>
+      <div class="row">
+        <div class="col-md-12">
+          {{ form.suggest_button }}
+        </div>
+      </div>
+      <br/>
+      <div class="row">
+        <div class="col-md-2">
+          <b>lemmatisoitu hakulause:</b>
+        </div>
+        <div class="col-md-10">
+          {{lemmatized}}
+        </div>
+      </div>      
+      <br/>
+      <div class="row">
+        <div class="col-md-12">
+          <h3>ESCO-ammatit</h3>
+          <table class="table">
+            <thead>
+              <tr>
+                <th class="idxcol">#</th>
+                <th class="rescol">TF-IDF</th>
+                <th class="rescol">FastText</th>
+                <th class="rescol">Sentence Transformer</th>
+                <th class="rescol">Yhdistelmä</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">1</th>
+                <td><b>{{results1['esco-ammatit'][0]}}</b><br/><div style="color:grey">{{results1['esco-ammatit-extra'][0]}}</div></td>
+                <td><b>{{results2['esco-ammatit'][0]}}</b><br/><div style="color:grey">{{results2['esco-ammatit-extra'][0]}}</div></td>
+                <td><b>{{results3['esco-ammatit'][0]}}</b><br/><div style="color:grey">{{results3['esco-ammatit-extra'][0]}}</div></td>
+                <td><b>{{results4['esco-ammatit'][0]}}</b><br/><div style="color:grey">{{results4['esco-ammatit-extra'][0]}}</div></td>
+              </tr>
+              <tr>
+                <th scope="row">2</th>
+                <td><b>{{results1['esco-ammatit'][1]}}</b><br/><div style="color:grey">{{results1['esco-ammatit-extra'][1]}}</div></td>
+                <td><b>{{results2['esco-ammatit'][1]}}</b><br/><div style="color:grey">{{results2['esco-ammatit-extra'][1]}}</div></td>
+                <td><b>{{results3['esco-ammatit'][1]}}</b><br/><div style="color:grey">{{results3['esco-ammatit-extra'][1]}}</div></td>
+                <td><b>{{results4['esco-ammatit'][1]}}</b><br/><div style="color:grey">{{results4['esco-ammatit-extra'][1]}}</div></td>
+              </tr>
+              <tr>
+                <th scope="row">3</th>
+                <td><b>{{results1['esco-ammatit'][2]}}</b><br/><div style="color:grey">{{results1['esco-ammatit-extra'][2]}}</div></td>
+                <td><b>{{results2['esco-ammatit'][2]}}</b><br/><div style="color:grey">{{results2['esco-ammatit-extra'][2]}}</div></td>
+                <td><b>{{results3['esco-ammatit'][2]}}</b><br/><div style="color:grey">{{results3['esco-ammatit-extra'][2]}}</div></td>
+                <td><b>{{results4['esco-ammatit'][2]}}</b><br/><div style="color:grey">{{results4['esco-ammatit-extra'][2]}}</div></td>
+              </tr>
+              <tr>
+                <th scope="row">4</th>
+                <td><b>{{results1['esco-ammatit'][3]}}</b><br/><div style="color:grey">{{results1['esco-ammatit-extra'][3]}}</div></td>
+                <td><b>{{results2['esco-ammatit'][3]}}</b><br/><div style="color:grey">{{results2['esco-ammatit-extra'][3]}}</div></td>
+                <td><b>{{results3['esco-ammatit'][3]}}</b><br/><div style="color:grey">{{results3['esco-ammatit-extra'][3]}}</div></td>
+                <td><b>{{results4['esco-ammatit'][3]}}</b><br/><div style="color:grey">{{results4['esco-ammatit-extra'][3]}}</div></td>
+              </tr>
+              <tr>
+                <th scope="row">5</th>
+                <td><b>{{results1['esco-ammatit'][4]}}</b><br/><div style="color:grey">{{results1['esco-ammatit-extra'][4]}}</div></td>
+                <td><b>{{results2['esco-ammatit'][4]}}</b><br/><div style="color:grey">{{results2['esco-ammatit-extra'][4]}}</div></td>
+                <td><b>{{results3['esco-ammatit'][4]}}</b><br/><div style="color:grey">{{results3['esco-ammatit-extra'][4]}}</div></td>
+                <td><b>{{results4['esco-ammatit'][4]}}</b><br/><div style="color:grey">{{results4['esco-ammatit-extra'][4]}}</div></td>
+              </tr>
+              <tr>
+                <th scope="row">6</th>
+                <td><b>{{results1['esco-ammatit'][5]}}</b><br/><div style="color:grey">{{results1['esco-ammatit-extra'][5]}}</div></td>
+                <td><b>{{results2['esco-ammatit'][5]}}</b><br/><div style="color:grey">{{results2['esco-ammatit-extra'][5]}}</div></td>
+                <td><b>{{results3['esco-ammatit'][5]}}</b><br/><div style="color:grey">{{results3['esco-ammatit-extra'][5]}}</div></td>
+                <td><b>{{results4['esco-ammatit'][5]}}</b><br/><div style="color:grey">{{results4['esco-ammatit-extra'][5]}}</div></td>
+              </tr>
+              <tr>
+                <th scope="row">7</th>
+                <td><b>{{results1['esco-ammatit'][6]}}</b><br/><div style="color:grey">{{results1['esco-ammatit-extra'][6]}}</div></td>
+                <td><b>{{results2['esco-ammatit'][6]}}</b><br/><div style="color:grey">{{results2['esco-ammatit-extra'][6]}}</div></td>
+                <td><b>{{results3['esco-ammatit'][6]}}</b><br/><div style="color:grey">{{results3['esco-ammatit-extra'][6]}}</div></td>
+                <td><b>{{results4['esco-ammatit'][6]}}</b><br/><div style="color:grey">{{results4['esco-ammatit-extra'][6]}}</div></td>
+              </tr>
+              <tr>
+                <th scope="row">8</th>
+                <td><b>{{results1['esco-ammatit'][7]}}</b><br/><div style="color:grey">{{results1['esco-ammatit-extra'][7]}}</div></td>
+                <td><b>{{results2['esco-ammatit'][7]}}</b><br/><div style="color:grey">{{results2['esco-ammatit-extra'][7]}}</div></td>
+                <td><b>{{results3['esco-ammatit'][7]}}</b><br/><div style="color:grey">{{results3['esco-ammatit-extra'][7]}}</div></td>
+                <td><b>{{results4['esco-ammatit'][7]}}</b><br/><div style="color:grey">{{results4['esco-ammatit-extra'][7]}}</div></td>
+              </tr>
+              <tr>
+                <th scope="row">9</th>
+                <td><b>{{results1['esco-ammatit'][8]}}</b><br/><div style="color:grey">{{results1['esco-ammatit-extra'][8]}}</div></td>
+                <td><b>{{results2['esco-ammatit'][8]}}</b><br/><div style="color:grey">{{results2['esco-ammatit-extra'][8]}}</div></td>
+                <td><b>{{results3['esco-ammatit'][8]}}</b><br/><div style="color:grey">{{results3['esco-ammatit-extra'][8]}}</div></td>
+                <td><b>{{results4['esco-ammatit'][8]}}</b><br/><div style="color:grey">{{results4['esco-ammatit-extra'][8]}}</div></td>
+              </tr>
+              <tr>
+                <th scope="row">10</th>
+                <td><b>{{results1['esco-ammatit'][9]}}</b><br/><div style="color:grey">{{results1['esco-ammatit-extra'][9]}}</div></td>
+                <td><b>{{results2['esco-ammatit'][9]}}</b><br/><div style="color:grey">{{results2['esco-ammatit-extra'][9]}}</div></td>
+                <td><b>{{results3['esco-ammatit'][9]}}</b><br/><div style="color:grey">{{results3['esco-ammatit-extra'][9]}}</div></td>
+                <td><b>{{results4['esco-ammatit'][9]}}</b><br/><div style="color:grey">{{results4['esco-ammatit-extra'][9]}}</div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+
+{% endblock %}
+  
