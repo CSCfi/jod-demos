@@ -102,16 +102,20 @@ def get_weightings(weights):
     return (weights[0]*df[colnorm1] + weights[1]*df[colnorm2] +
             weights[2]*df[colnorm3] + weights[3]*df[colnorm4])
 
+def weighting_function(w, a=1.0):
+    #return np.sign(w)*(np.exp(a*np.abs(w))-1)/(np.exp(a*3)-1)
+    wdict = {-3:-0.3, -2:-0.1, -1:-0.05, 0:0, 1:0.05, 2:0.1, 3:0.3}
+    return [wdict[i] for i in w]
+
 def get_tfidf(txt, w=(0,0,0,0)):
-    weights = np.sign(w)*(np.exp(1*np.abs(w))-1)/(np.exp(1*3)-1)
-    #print('w:', w, weights)
+    weights = weighting_function(w, a=1.5)
     query_vec = vectorizer.transform([txt])
     res = (cosine_similarity(X_tfidf, query_vec).squeeze() +
            get_weightings(weights))
     return res
 
 def get_fasttext(txt, w=(0,0,0,0)):
-    weights = np.sign(w)*(np.exp(1*np.abs(w))-1)/(np.exp(1*3)-1)
+    weights = weighting_function(w, a=1.5)
     query_ft = model_ft.get_sentence_vector(txt)
     res = (cosine_similarity(X_ft, query_ft.reshape(1, -1)).squeeze() +
            get_weightings(weights))
@@ -121,8 +125,7 @@ def cos_sim(a, b):
     return np.dot(a, b)/(np.linalg.norm(a)*np.linalg.norm(b))
 
 def get_strans(txt, w=(0,0,0,0)):
-    weights = np.sign(w)*(np.exp(1*np.abs(w))-1)/(np.exp(1*3)-1)
-    weightings = get_weightings(weights)
+    weightings = get_weightings(weighting_function(w, a=1.5))
     qemb = model_strans.encode(txt)
 
     res = np.zeros(len(Xemb))
