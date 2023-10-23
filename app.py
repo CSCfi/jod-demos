@@ -19,6 +19,7 @@ import fasttext as ft
 from sentence_transformers import SentenceTransformer
 
 from yamlconfig import read_config
+from encoder_client import return_encodings
 
 app = flask.Flask(__name__)
 Bootstrap(app)
@@ -60,7 +61,7 @@ else:
 
 if DO_FT:
     print('Loading FastText model:', cfg['ftmodel'])
-    model_ft = ft.load_model(cfg['ftmodel'])
+    #model_ft = ft.load_model(cfg['ftmodel'])
     X_ft1 = joblib.load('{}/tmt/{}-{}-fasttext.pkl'.format(cfg['datadir'], cfg['dataset1'], cfg['lemmatizer']))
     X_ft2 = joblib.load('{}/tmt/{}-{}-fasttext.pkl'.format(cfg['datadir'], cfg['dataset2'], cfg['lemmatizer']))
     X_ft3 = joblib.load('{}/esco/fi/{}-{}-fasttext.pkl'.format(cfg['datadir'], cfg['dataset3'], cfg['lemmatizer']))
@@ -73,7 +74,7 @@ else:
 
 if DO_STRANS:
     print('Loading Sentence Transformer model:', cfg['stmodel'])
-    model_strans = SentenceTransformer(cfg['stmodel'])
+    #model_strans = SentenceTransformer(cfg['stmodel'])
     Xemb1 = np.load(cfg['datadir']+'/tmt/'+cfg['embfile1'])
     Xemb2 = np.load(cfg['datadir']+'/tmt/'+cfg['embfile2'])
     Xemb3 = np.load(cfg['datadir']+'/esco/fi/'+cfg['embfile3'])
@@ -100,6 +101,9 @@ df7 = df7.set_index('name')
 print('Testing lemmatizer:', cfg['lemmatizer'])
 test_lemmatizer()
 
+print('Testing encoder-server')
+return_encodings("tämä on testi")
+
 print('All done')
 
 def get_tfidf(txt):
@@ -119,8 +123,8 @@ def get_tfidf(txt):
     res7 = cosine_similarity(X_tfidf7, query_vec7).squeeze()
     return [res1, res2, res3, res4, res5, res6, res7]
     
-def get_fasttext(txt):
-    query_ft = model_ft.get_sentence_vector(txt)
+def get_fasttext(query_ft):
+    #query_ft = model_ft.get_sentence_vector(txt)
     res1 = cosine_similarity(X_ft1, query_ft.reshape(1, -1)).squeeze()
     res2 = cosine_similarity(X_ft2, query_ft.reshape(1, -1)).squeeze()
     res3 = cosine_similarity(X_ft3, query_ft.reshape(1, -1)).squeeze()
@@ -133,8 +137,8 @@ def get_fasttext(txt):
 def cos_sim(a, b): 
     return np.dot(a, b)/(np.linalg.norm(a)*np.linalg.norm(b))
 
-def get_strans(txt):
-    qemb = model_strans.encode(txt)
+def get_strans(qemb):
+    #qemb = model_strans.encode(txt)
 
     res1 = np.zeros(len(Xemb1))
     for i in range(len(Xemb1)):
@@ -252,9 +256,11 @@ def parse_get():
         txt = "pidän lentämisestä ja lentokoneista"
     txt_lem = lemmatize(txt)
 
+    enc_ft, enc_strans = return_encodings(txt)
+
     res = get_results(get_tfidf(txt_lem) if DO_TFIDF else None,
-                      get_fasttext(txt_lem) if DO_FT else None,
-                      get_strans(txt) if DO_STRANS else None)
+                      get_fasttext(enc_ft) if DO_FT else None,
+                      get_strans(enc_strans) if DO_STRANS else None)
 
     form = MyForm(meta={'csrf': False})
     return flask.Response(flask.render_template("index-bs.html",
@@ -273,9 +279,12 @@ def parse_post():
     if not txt:
         return """Error occurred""", 400
     txt_lem = lemmatize(txt)
+
+    enc_ft, enc_strans = return_encodings(txt)
+
     res = get_results(get_tfidf(txt_lem) if DO_TFIDF else None,
-                      get_fasttext(txt_lem) if DO_FT else None,
-                      get_strans(txt) if DO_STRANS else None)
+                      get_fasttext(enc_ft) if DO_FT else None,
+                      get_strans(enc_strans) if DO_STRANS else None)
     return flask.Response(flask.render_template("index-bs.html",
                                                 lemmatized=txt_lem,
                                                 results1=res['tfidf'],

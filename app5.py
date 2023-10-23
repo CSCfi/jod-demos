@@ -19,6 +19,7 @@ import fasttext as ft
 from sentence_transformers import SentenceTransformer
 
 from yamlconfig import read_config
+from encoder_client import return_encodings
 
 # ----------------------------------------------------------------------
 
@@ -33,10 +34,12 @@ class MyForm(FlaskForm):
     weighting4 =  IntegerRangeField('kohtaanto-ongelma:', default=0)
     suggest_button = SubmitField(label="Ehdota ammatteja")
 
-DO_TFIDF, DO_FT, DO_STRANS = True, True, True
-assert DO_TFIDF or DO_FT or DO_STRANS, "At least one algorithm needed"
-
 cfg = read_config()
+debug = cfg['debug']
+
+assert cfg['do_tfidf'] or cfg['do_ft'] or cfg['do_strans'], (
+    "At least one algorithm needed")
+
 if cfg['lemmatizer'] == "tnpp":
     from lemmatizer_tnpp import lemmatize, test_lemmatizer
 elif cfg['lemmatizer'] == "voikko":
@@ -46,23 +49,23 @@ elif cfg['lemmatizer'] == "snowball":
 else:
     assert 0, "Unknown lemmatizer: "+cfg['lemmatizer']
 
-if DO_TFIDF:
+if cfg['do_tfidf']:
     print('Loading TF-IDF models')
     vectorizer = joblib.load('{}/esco/fi/{}-{}-tfidf.pkl'.format(cfg['datadir'], cfg['dataset8'], cfg['lemmatizer']))
     X_tfidf = joblib.load('{}/esco/fi/{}-{}-tfidf-mat.pkl'.format(cfg['datadir'], cfg['dataset8'], cfg['lemmatizer']))
 else:
     print('Skipping TF-IDF')
 
-if DO_FT:
+if cfg['do_ft']:
     print('Loading FastText model:', cfg['ftmodel'])
-    model_ft = ft.load_model(cfg['ftmodel'])
+    #model_ft = ft.load_model(cfg['ftmodel'])
     X_ft = joblib.load('{}/esco/fi/{}-{}-fasttext.pkl'.format(cfg['datadir'], cfg['dataset8'], cfg['lemmatizer']))
 else:
     print('Skipping FastText')
 
-if DO_STRANS:
+if cfg['do_strans']:
     print('Loading Sentence Transformer model:', cfg['stmodel'])
-    model_strans = SentenceTransformer(cfg['stmodel'])
+    #model_strans = SentenceTransformer(cfg['stmodel'])
     Xemb = np.load(cfg['datadir']+'/esco/fi/'+cfg['embfile8'])
 else:
     print('Skipping Sentence Transformer')
@@ -94,6 +97,9 @@ df[colnorm4] = normalize(df[col4])
 print('Testing lemmatizer:', cfg['lemmatizer'])
 test_lemmatizer()
 
+print('Testing encoder-server')
+return_encodings("tämä on testi")
+
 print('All done')
 
 # ----------------------------------------------------------------------
@@ -114,9 +120,9 @@ def get_tfidf(txt, w=(0,0,0,0)):
            get_weightings(weights))
     return res
 
-def get_fasttext(txt, w=(0,0,0,0)):
+def get_fasttext(query_ft, w=(0,0,0,0)):
     weights = weighting_function(w, a=1.5)
-    query_ft = model_ft.get_sentence_vector(txt)
+    #query_ft = model_ft.get_sentence_vector(txt)
     res = (cosine_similarity(X_ft, query_ft.reshape(1, -1)).squeeze() +
            get_weightings(weights))
     return res
@@ -124,9 +130,9 @@ def get_fasttext(txt, w=(0,0,0,0)):
 def cos_sim(a, b):
     return np.dot(a, b)/(np.linalg.norm(a)*np.linalg.norm(b))
 
-def get_strans(txt, w=(0,0,0,0)):
+def get_strans(qemb, w=(0,0,0,0)):
     weightings = get_weightings(weighting_function(w, a=1.5))
-    qemb = model_strans.encode(txt)
+    #qemb = model_strans.encode(txt)
 
     res = np.zeros(len(Xemb))
     for i in range(len(Xemb)):
@@ -187,9 +193,11 @@ def parse_get():
         txt = "pidän lentämisestä ja lentokoneista"
     txt_lem = lemmatize(txt)
 
-    res = get_results(get_tfidf(txt_lem) if DO_TFIDF else None,
-                      get_fasttext(txt_lem) if DO_FT else None,
-                      get_strans(txt) if DO_STRANS else None)
+    enc_ft, enc_strans = return_encodings(txt)
+
+    res = get_results(get_tfidf(txt_lem) if cfg['do_tfidf'] else None,
+                      get_fasttext(enc_ft) if cfg['do_ft'] else None,
+                      get_strans(enc_strans) if cfg['do_strans'] else None)
 
     form = MyForm(meta={'csrf': False})
     return flask.Response(flask.render_template("index5.html",
@@ -208,11 +216,14 @@ def parse_post():
     if not txt:
         return """Error occurred""", 400
     txt_lem = lemmatize(txt)
+
+    enc_ft, enc_strans = return_encodings(txt)
+
     weights = (form.weighting1.data, form.weighting2.data,
                form.weighting3.data, form.weighting4.data)
-    res = get_results(get_tfidf(txt_lem, weights) if DO_TFIDF else None,
-                      get_fasttext(txt_lem, weights) if DO_FT else None,
-                      get_strans(txt, weights) if DO_STRANS else None)
+    res = get_results(get_tfidf(txt_lem, weights) if cfg['do_tfidf'] else None,
+                      get_fasttext(enc_ft, weights) if cfg['do_ft'] else None,
+                      get_strans(enc_strans, weights) if cfg['do_strans'] else None)
     return flask.Response(flask.render_template("index5.html",
                                                 lemmatized=txt_lem,
                                                 results1=res['tfidf'],
