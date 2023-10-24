@@ -22,6 +22,7 @@ import fasttext as ft
 from sentence_transformers import SentenceTransformer
 
 from yamlconfig import read_config
+from encoder_client import return_encodings
 
 # ----------------------------------------------------------------------
 
@@ -64,7 +65,7 @@ else:
 
 if cfg['do_ft']:
     print('Loading FastText model:', cfg['ftmodel'])
-    model_ft = ft.load_model(cfg['ftmodel'])
+    #model_ft = ft.load_model(cfg['ftmodel'])
     X_ft1 = joblib.load('{}/tmt/{}-{}-fasttext.pkl'.format(cfg['datadir'], cfg['dataset1'], cfg['lemmatizer']))
     X_ft2 = joblib.load('{}/tmt/{}-{}-fasttext.pkl'.format(cfg['datadir'], cfg['dataset2'], cfg['lemmatizer']))
     X_ft3 = joblib.load('{}/esco/fi/{}-{}-fasttext.pkl'.format(cfg['datadir'], cfg['dataset3'], cfg['lemmatizer']))
@@ -77,7 +78,7 @@ else:
 
 if cfg['do_strans']:
     print('Loading Sentence Transformer model:', cfg['stmodel'])
-    model_strans = SentenceTransformer(cfg['stmodel'])
+    #model_strans = SentenceTransformer(cfg['stmodel'])
     Xemb1 = np.load(cfg['datadir']+'/tmt/'+cfg['embfile1'])
     Xemb2 = np.load(cfg['datadir']+'/tmt/'+cfg['embfile2'])
     Xemb3 = np.load(cfg['datadir']+'/esco/fi/'+cfg['embfile3'])
@@ -125,6 +126,9 @@ df7_riasec = df7['avo-code-int'].apply(pd.Series)
 
 print('Testing lemmatizer:', cfg['lemmatizer'])
 test_lemmatizer()
+
+print('Testing encoder-server')
+return_encodings("tämä on testi")
 
 if cfg['do_tfidf'] and cfg['do_ft'] and cfg['do_strans']:
     final_algorithm = 'combined'
@@ -181,19 +185,18 @@ def _fasttext(q_int, q_edu, q_ski, w, X):
         res += weight*cosine_similarity(X, q_ski).squeeze()
     return res
 
-def get_fasttext(txt_int, txt_edu=None, txt_ski=None, weighting=5):
-    query_ft_int = model_ft.get_sentence_vector(txt_int)
+def get_fasttext(query_ft_int, query_ft_edu=None, query_ft_ski=None, weighting=5):
     query_ft_int = query_ft_int.reshape(1, -1)
-    if txt_edu is not None:
-        query_ft_edu = model_ft.get_sentence_vector(txt_edu)
+    if query_ft_edu is not None:
+        #query_ft_edu = model_ft.get_sentence_vector(txt_edu)
         query_ft_edu = query_ft_edu.reshape(1, -1)
-    else:
-        query_ft_edu = None
-    if txt_ski is not None:
-        query_ft_ski = model_ft.get_sentence_vector(txt_ski)
+    #else:
+    #    query_ft_edu = None
+    if query_ft_ski is not None:
+        #query_ft_ski = model_ft.get_sentence_vector(txt_ski)
         query_ft_ski = query_ft_ski.reshape(1, -1)
-    else:
-        query_ft_ski = None
+    #else:
+    #    query_ft_ski = None
 
     return [_fasttext(query_ft_int, query_ft_edu, query_ft_ski, weighting, X_ft1),
             _fasttext(query_ft_int, query_ft_edu, query_ft_ski, weighting, X_ft2),
@@ -219,16 +222,16 @@ def _strans(q_int, q_edu, q_ski, w, X):
             res[i] += weight*cos_sim(q_ski, X[i])
     return res
 
-def get_strans(txt_int, txt_edu=None, txt_ski=None, weighting=5):
-    qemb_int = model_strans.encode(txt_int)
-    if txt_edu is not None:
-        qemb_edu = model_strans.encode(txt_edu)
-    else:
-        qemb_edu = None
-    if txt_ski is not None:
-        qemb_ski = model_strans.encode(txt_ski)
-    else:
-        qemb_ski = None
+def get_strans(qemb_int, qemb_edu=None, qemb_ski=None, weighting=5):
+    # qemb_int = model_strans.encode(txt_int)
+    # if txt_edu is not None:
+    #     qemb_edu = model_strans.encode(txt_edu)
+    # else:
+    #     qemb_edu = None
+    # if txt_ski is not None:
+    #     qemb_ski = model_strans.encode(txt_ski)
+    # else:
+    #     qemb_ski = None
 
     return [_strans(qemb_int, qemb_edu, qemb_ski, weighting, Xemb1),
             _strans(qemb_int, qemb_edu, qemb_ski, weighting, Xemb2),
@@ -385,9 +388,11 @@ def parse_get():
         txt = "pidän lentämisestä ja lentokoneista"
     txt_lem = lemmatize(txt)
 
+    enc_ft, enc_strans = return_encodings(txt)
+
     res = get_results(get_tfidf(txt_lem) if cfg['do_tfidf'] else None,
-                      get_fasttext(txt_lem) if cfg['do_ft'] else None,
-                      get_strans(txt) if cfg['do_strans'] else None)
+                      get_fasttext(enc_ft) if cfg['do_ft'] else None,
+                      get_strans(enc_strans) if cfg['do_strans'] else None)
 
     form = MyForm(meta={'csrf': False})
     return flask.Response(flask.render_template(cfg['html_template'],
@@ -418,9 +423,13 @@ def parse_post():
         print('txt_edu:', txt_edu, type(txt_edu))
         print('txt_ski:', txt_ski, type(txt_ski))
 
+    enc_ft_int, enc_strans_int = return_encodings(txt)
+    enc_ft_edu, enc_strans_edu = return_encodings(txt_edu)
+    enc_ft_ski, enc_strans_ski = return_encodings(txt_ski)
+
     res = get_results(get_tfidf(txt_lem, txt_edu_lem, txt_ski_lem, form.weighting.data) if cfg['do_tfidf'] else None,
-                      get_fasttext(txt_lem, txt_edu_lem, txt_ski_lem, form.weighting.data) if cfg['do_ft'] else None,
-                      get_strans(txt, txt_edu, txt_ski, form.weighting.data) if cfg['do_strans'] else None,
+                      get_fasttext(enc_ft_int, enc_ft_edu, enc_ft_ski, form.weighting.data) if cfg['do_ft'] else None,
+                      get_strans(enc_strans_int, enc_strans_edu, enc_strans_ski, form.weighting.data) if cfg['do_strans'] else None,
                       form.educ.data, form.afie.data, form.aatt.data,
                       form.ares.data, (form.aria.data, form.ari2.data))
 

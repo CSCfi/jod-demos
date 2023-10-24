@@ -2,8 +2,14 @@ import requests
 import numpy as np
 
 def return_encodings(txt, verbose=False):
-    r = requests.get('http://localhost:12123', params={'text': txt})
-    assert r.status_code == requests.codes.ok, "Failed to connect to server"
+    if txt is None or len(txt)<4:
+        return None, None
+
+    try:
+        r = requests.get('http://localhost:12123', params={'text': txt})
+    except:
+        assert 0, 'Connection to encoder-server not working. Is the server running?'
+    assert r.status_code == requests.codes.ok, "Status code not ok"
 
     if verbose:
         print(r.url)
