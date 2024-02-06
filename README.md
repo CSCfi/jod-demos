@@ -15,4 +15,4 @@ Analytics experiments for the [*Jatkuvan oppimisen digitaalinen palvelukokonaisu
 2. restrictions: [code](./app2.py), [screenshot](imgs/ex2.png)
 3. feedback: [code](./app3.py), [screenshot](imgs/ex3.png)
 4. chatbot: [code](./app4.py), [screenshot](imgs/ex4.png)
-5. weightings: [code](./app5.py)
+5. weightings: [code](./app5.py), [screenshot](imgs/ex5.png)
